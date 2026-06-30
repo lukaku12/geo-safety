@@ -22,6 +22,14 @@ export function useCompanies() {
   });
 }
 
+export function useCompanyDetail(id: string) {
+  return useQuery({
+    queryKey: keys.companyDetail(id),
+    queryFn: () => api.getCompanyDetail(id),
+    enabled: Boolean(id),
+  });
+}
+
 export function useCompanyReconciliation(period: PeriodKey) {
   return useQuery({
     queryKey: keys.companyReconciliation(period),

@@ -13,6 +13,7 @@ export const keys = {
   stats: (period: PeriodKey) => [...keys.all, "stats", period] as const,
 
   companies: () => [...keys.all, "companies"] as const,
+  companyDetail: (id: string) => [...keys.companies(), id] as const,
 
   companyReconciliation: (period: PeriodKey) =>
     [...keys.all, "company-reconciliation", period] as const,

@@ -19,6 +19,19 @@ export interface Company {
   taxId: string;
 }
 
+export interface Contract {
+  id: string;
+  monthlyAmount: number;
+  status: ContractStatus;
+  startDate: string; // ISO date (YYYY-MM-DD)
+  endDate: string | null;
+}
+
+/** A company plus its contracts — backs the company drill-down page. */
+export interface CompanyDetail extends Company {
+  contracts: Contract[];
+}
+
 export interface Transaction {
   id: string;
   docKey: string;

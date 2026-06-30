@@ -1,5 +1,6 @@
 import type {
   Company,
+  CompanyDetail,
   CompanyReconciliation,
   Paginated,
   ReconciliationStats,
@@ -80,6 +81,10 @@ export const api = {
 
   getCompanies(): Promise<Company[]> {
     return fetchJson("/api/companies");
+  },
+
+  getCompanyDetail(id: string): Promise<CompanyDetail> {
+    return fetchJson(`/api/companies/${encodeURIComponent(id)}`);
   },
 
   runReconciliation(): Promise<RunReconciliationResult> {
