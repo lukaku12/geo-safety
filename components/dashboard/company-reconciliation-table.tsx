@@ -9,7 +9,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/ui/states";
 import { OutcomeBadge } from "@/components/dashboard/status-badges";
 import { useCompanyReconciliation } from "@/hooks/use-dashboard-queries";
-import type { CompanyReconciliation } from "@/lib/types/domain";
+import type {
+  CompanyReconciliation,
+  ReconciliationOutcome,
+} from "@/lib/types/domain";
 import { isMonthPeriod, type PeriodKey } from "@/lib/utils/periods";
 import { formatCurrency, formatMonth, formatSignedCurrency } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
@@ -38,11 +41,22 @@ function exportCsv(rows: CompanyReconciliation[], period: PeriodKey) {
 
 export function CompanyReconciliationTable({
   period,
+  outcomeFilter = "all",
 }: {
   period: PeriodKey;
+  outcomeFilter?: ReconciliationOutcome | "all";
 }) {
   const enabled = isMonthPeriod(period);
-  const { data, isPending, isError, refetch } = useCompanyReconciliation(period);
+  const { data: raw, isPending, isError, refetch } =
+    useCompanyReconciliation(period);
+
+  const data = useMemo(
+    () =>
+      raw && outcomeFilter !== "all"
+        ? raw.filter((r) => r.outcome === outcomeFilter)
+        : raw,
+    [raw, outcomeFilter],
+  );
 
   const totals = useMemo(() => {
     if (!data) return null;
@@ -119,7 +133,7 @@ export function CompanyReconciliationTable({
                         </td>
                       </tr>
                     ))
-                  : data.map((row) => (
+                  : (data ?? []).map((row) => (
                       <tr
                         key={row.companyId}
                         className="border-b border-border last:border-0 hover:bg-surface-muted/60"
