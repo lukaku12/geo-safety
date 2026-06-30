@@ -2,17 +2,39 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { api } from "@/lib/api/client";
+import { api, ApiClientError } from "@/lib/api/client";
 import { keys } from "@/lib/query/keys";
+import { useToast } from "@/components/ui/toast";
 import type { Company, Paginated, Transaction } from "@/lib/types/domain";
 import type { UpdateTransactionInput } from "@/lib/validation/transactions";
+
+/** Human-readable reason from an API error, falling back to a generic line. */
+function errorMessage(error: unknown, fallback: string): string {
+  return error instanceof ApiClientError ? error.message : fallback;
+}
 
 /** Run the INN auto-match, then refresh every dashboard query. */
 export function useRunReconciliation() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+
   return useMutation({
     mutationFn: () => api.runReconciliation(),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: keys.all }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: keys.all });
+      toast({
+        tone: "success",
+        title: "Auto-match complete",
+        description: `Matched ${result.matchedCount} • ${result.unmatchedCount} still unmatched.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        tone: "error",
+        title: "Auto-match failed",
+        description: errorMessage(error, "Please try again."),
+      });
+    },
   });
 }
 
@@ -54,8 +76,15 @@ interface UpdateVars {
  * transaction page, rollback on error, and a full invalidation on settle so the
  * stats and per-company views reconcile with server truth.
  */
+const ACTION_SUCCESS: Record<UpdateTransactionInput["action"], string> = {
+  match: "Transaction matched",
+  ignore: "Transaction ignored",
+  unmatch: "Match removed",
+};
+
 export function useUpdateTransaction() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   return useMutation({
     mutationFn: ({ id, input }: UpdateVars) => api.updateTransaction(id, input),
@@ -81,10 +110,19 @@ export function useUpdateTransaction() {
       return { snapshots };
     },
 
-    onError: (_error, _vars, context) => {
+    onError: (error, { input }, context) => {
       context?.snapshots.forEach(([key, data]) =>
         queryClient.setQueryData(key, data),
       );
+      toast({
+        tone: "error",
+        title: "Couldn't update transaction",
+        description: errorMessage(error, `Failed to ${input.action}.`),
+      });
+    },
+
+    onSuccess: (_data, { input }) => {
+      toast({ tone: "success", title: ACTION_SUCCESS[input.action] });
     },
 
     onSettled: () => queryClient.invalidateQueries({ queryKey: keys.all }),
