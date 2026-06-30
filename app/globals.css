@@ -1,26 +1,145 @@
 @import "tailwindcss";
 
+/*
+ * Design tokens for the reconciliation dashboard.
+ * Single source of truth for color + radius, mapped into Tailwind v4 utilities
+ * via `@theme inline` (e.g. `bg-surface`, `text-muted-foreground`, `border-border`).
+ * Light + dark are both defined; dark follows the OS preference.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f8fa;
+  --foreground: #0c111b;
+
+  --surface: #ffffff;
+  --surface-muted: #f1f3f6;
+
+  --card: #ffffff;
+  --card-foreground: #0c111b;
+
+  --border: #e4e7ec;
+  --input: #e4e7ec;
+  --ring: #2563eb;
+
+  --muted: #f1f3f6;
+  --muted-foreground: #667085;
+
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+
+  --success: #15803d;
+  --success-foreground: #ffffff;
+  --success-soft: #ecfdf3;
+
+  --warning: #b54708;
+  --warning-foreground: #ffffff;
+  --warning-soft: #fffaeb;
+
+  --danger: #b42318;
+  --danger-foreground: #ffffff;
+  --danger-soft: #fef3f2;
+
+  --info: #175cd3;
+  --info-foreground: #ffffff;
+  --info-soft: #eff8ff;
+
+  --radius: 0.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0e16;
+    --foreground: #e6e9ef;
+
+    --surface: #111623;
+    --surface-muted: #161c2b;
+
+    --card: #111623;
+    --card-foreground: #e6e9ef;
+
+    --border: #232a3a;
+    --input: #232a3a;
+    --ring: #3b82f6;
+
+    --muted: #161c2b;
+    --muted-foreground: #94a0b8;
+
+    --primary: #3b82f6;
+    --primary-foreground: #0a0e16;
+
+    --success: #4ade80;
+    --success-foreground: #052e16;
+    --success-soft: #0f2417;
+
+    --warning: #fbbf24;
+    --warning-foreground: #2a1c00;
+    --warning-soft: #271d05;
+
+    --danger: #f87171;
+    --danger-foreground: #2a0a0a;
+    --danger-soft: #2a1212;
+
+    --info: #60a5fa;
+    --info-foreground: #061224;
+    --info-soft: #0c1e36;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
+
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-danger-soft: var(--danger-soft);
+
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-soft: var(--info-soft);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 0.25rem);
+  --radius-sm: calc(var(--radius) - 0.375rem);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--border);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tabular numbers keep currency columns visually aligned. */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
