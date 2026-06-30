@@ -4,7 +4,13 @@
  * Design tokens for the reconciliation dashboard.
  * Single source of truth for color + radius, mapped into Tailwind v4 utilities
  * via `@theme inline` (e.g. `bg-surface`, `text-muted-foreground`, `border-border`).
- * Light + dark are both defined; dark follows the OS preference.
+ *
+ * Theming is attribute-driven with a system fallback, giving three states:
+ *   - no `data-theme`        → follow the OS preference
+ *   - data-theme="light"     → force light
+ *   - data-theme="dark"      → force dark
+ * The dark token block is therefore applied under both the prefers-dark media
+ * query (when not explicitly forced to light) and the explicit dark attribute.
  */
 :root {
   --background: #f7f8fa;
@@ -45,8 +51,9 @@
   --radius: 0.75rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
+/* Dark palette, shared by the system-preference fallback and the forced state. */
+@layer base {
+  :root.theme-dark {
     --background: #0a0e16;
     --foreground: #e6e9ef;
 
