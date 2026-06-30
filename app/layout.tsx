@@ -2,7 +2,14 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-import { QueryProvider } from "@/components/providers/query-provider";
+import { AppProviders } from "@/components/providers/app-providers";
+
+/**
+ * Runs before first paint to set the `theme-dark` class from the stored
+ * preference (or the OS setting when on "system"), preventing a light→dark
+ * flash. Must mirror the resolver in `hooks/use-theme.ts`.
+ */
+const themeScript = `(function(){try{var t=localStorage.getItem("theme");var d=t==="dark"||((t!=="light")&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("theme-dark",d);}catch(e){}})();`;
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,9 +39,13 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="min-h-full">
-        <QueryProvider>{children}</QueryProvider>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );
