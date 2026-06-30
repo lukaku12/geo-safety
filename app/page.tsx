@@ -1,65 +1,45 @@
-import Image from "next/image";
+import { Suspense } from "react";
 
-export default function Home() {
+import { Dashboard } from "@/components/dashboard/dashboard";
+import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
+
+/**
+ * Declare static instant-navigation prefetching for this route (Next.js 16
+ * Cache Components). The static header is in the prerendered shell; the client
+ * `<Dashboard>` reads `useSearchParams` (URL-driven filter state), which
+ * suspends on a cold page load, so it sits behind a <Suspense> boundary with a
+ * meaningful skeleton fallback.
+ *
+ * `unstable_disableValidation` is set because the draft build-time validator
+ * currently flags the `useSearchParams`-suspends-on-load pattern (it bubbles a
+ * dynamic-metadata error) even though the route does produce a valid instant
+ * shell. We keep the prefetch declaration and opt out of the experimental
+ * validation rather than gate a production build on a draft check. The
+ * Instant-Navs DevTools overlay (enabled in next.config.ts) still works in dev.
+ */
+export const unstable_instant = {
+  prefetch: "static",
+  unstable_disableValidation: true,
+};
+
+export const metadata = { title: "Dashboard" };
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Payment reconciliation
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Match incoming transfers to companies and track expected vs. actual
+          revenue.
+        </p>
+      </header>
+
+      <Suspense fallback={<DashboardSkeleton />}>
+        <Dashboard />
+      </Suspense>
+    </main>
   );
 }
