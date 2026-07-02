@@ -50,11 +50,19 @@ function needsAttention(rows: CompanyReconciliation[]): CompanyReconciliation[] 
 export function Overview() {
   const { period } = usePeriod();
   const stats = useStats(period);
-  const reconciliation = useCompanyReconciliation(period);
+  const reconciliation = useCompanyReconciliation({
+    period,
+    q: undefined,
+    page: 1,
+    pageSize: 100,
+    sort: "name",
+    order: "asc",
+  });
   const monthly = isMonthPeriod(period);
 
   const attention = useMemo(
-    () => (reconciliation.data ? needsAttention(reconciliation.data) : []),
+    () =>
+      reconciliation.data ? needsAttention(reconciliation.data.items) : [],
     [reconciliation.data],
   );
 
@@ -121,7 +129,7 @@ export function Overview() {
             ) : reconciliation.isPending ? (
               <Skeleton className="h-64 w-full" />
             ) : (
-              <ExpectedActualBars rows={reconciliation.data} />
+              <ExpectedActualBars rows={reconciliation.data.items} />
             )}
           </CardContent>
         </Card>

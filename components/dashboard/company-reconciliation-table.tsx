@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/ui/states";
+import { PaginationBar, SortHeader } from "@/components/dashboard/table-controls";
 import { OutcomeBadge } from "@/components/dashboard/status-badges";
 import { useCompanyReconciliation } from "@/hooks/use-dashboard-queries";
+import type { useReconciliationTableParams } from "@/hooks/use-table-params";
 import type {
   CompanyReconciliation,
-  ReconciliationOutcome,
 } from "@/lib/types/domain";
 import { isMonthPeriod, type PeriodKey } from "@/lib/utils/periods";
 import { formatCurrency, formatMonth, formatSignedCurrency } from "@/lib/utils/format";
@@ -40,34 +41,30 @@ function exportCsv(rows: CompanyReconciliation[], period: PeriodKey) {
 }
 
 export function CompanyReconciliationTable({
-  period,
-  outcomeFilter = "all",
+  query,
+  patch,
+  toggleSort,
 }: {
-  period: PeriodKey;
-  outcomeFilter?: ReconciliationOutcome | "all";
+  query: ReturnType<typeof useReconciliationTableParams>["query"];
+  patch: ReturnType<typeof useReconciliationTableParams>["patch"];
+  toggleSort: ReturnType<typeof useReconciliationTableParams>["toggleSort"];
 }) {
+  const period = query.period as PeriodKey;
   const enabled = isMonthPeriod(period);
-  const { data: raw, isPending, isPlaceholderData, isError, refetch } =
-    useCompanyReconciliation(period);
-
-  const data = useMemo(
-    () =>
-      raw && outcomeFilter !== "all"
-        ? raw.filter((r) => r.outcome === outcomeFilter)
-        : raw,
-    [raw, outcomeFilter],
-  );
+  const { data, isPending, isPlaceholderData, isError, refetch } =
+    useCompanyReconciliation(query);
+  const rows = useMemo(() => data?.items ?? [], [data]);
 
   const totals = useMemo(() => {
     if (!data) return null;
-    return data.reduce(
+    return rows.reduce(
       (acc, r) => ({
         expected: acc.expected + r.expected,
         actual: acc.actual + r.actual,
       }),
       { expected: 0, actual: 0 },
     );
-  }, [data]);
+  }, [data, rows]);
 
   return (
     <section className="flex flex-col gap-3">
@@ -80,11 +77,11 @@ export function CompanyReconciliationTable({
               : "Pick a specific month to compare contracted amounts with payments."}
           </p>
         </div>
-        {enabled && data && data.length > 0 ? (
+        {enabled && rows.length > 0 ? (
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => exportCsv(data, period)}
+            onClick={() => exportCsv(rows, period)}
           >
             <Download className="h-4 w-4" />
             Export CSV
@@ -110,6 +107,11 @@ export function CompanyReconciliationTable({
             </button>
           }
         />
+      ) : !isPending && data && rows.length === 0 ? (
+        <EmptyState
+          title="No reconciliation rows match"
+          description="Try clearing the search or changing the outcome filter."
+        />
       ) : (
         <Card className="overflow-hidden">
           <div
@@ -121,12 +123,51 @@ export function CompanyReconciliationTable({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
-                  <th className="px-4 py-3 font-medium">Company</th>
-                  <th className="px-4 py-3 font-medium">Tax ID</th>
-                  <th className="px-4 py-3 text-right font-medium">Expected</th>
-                  <th className="px-4 py-3 text-right font-medium">Actual</th>
-                  <th className="px-4 py-3 text-right font-medium">Difference</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
+                  <SortHeader
+                    label="Company"
+                    field="name"
+                    active={query.sort === "name"}
+                    order={query.order}
+                    onToggle={toggleSort}
+                  />
+                  <SortHeader
+                    label="Tax ID"
+                    field="tax_id"
+                    active={query.sort === "tax_id"}
+                    order={query.order}
+                    onToggle={toggleSort}
+                  />
+                  <SortHeader
+                    label="Expected"
+                    field="expected"
+                    active={query.sort === "expected"}
+                    order={query.order}
+                    onToggle={toggleSort}
+                    align="right"
+                  />
+                  <SortHeader
+                    label="Actual"
+                    field="actual"
+                    active={query.sort === "actual"}
+                    order={query.order}
+                    onToggle={toggleSort}
+                    align="right"
+                  />
+                  <SortHeader
+                    label="Difference"
+                    field="difference"
+                    active={query.sort === "difference"}
+                    order={query.order}
+                    onToggle={toggleSort}
+                    align="right"
+                  />
+                  <SortHeader
+                    label="Status"
+                    field="outcome"
+                    active={query.sort === "outcome"}
+                    order={query.order}
+                    onToggle={toggleSort}
+                  />
                 </tr>
               </thead>
               <tbody>
@@ -138,7 +179,7 @@ export function CompanyReconciliationTable({
                         </td>
                       </tr>
                     ))
-                  : (data ?? []).map((row) => (
+                  : rows.map((row) => (
                       <tr
                         key={row.companyId}
                         className="border-b border-border last:border-0 hover:bg-surface-muted/60"
@@ -195,6 +236,18 @@ export function CompanyReconciliationTable({
           </div>
         </Card>
       )}
+
+      {data && rows.length > 0 ? (
+        <PaginationBar
+          page={data.page}
+          pageSize={data.pageSize}
+          total={data.total}
+          totalPages={data.totalPages}
+          itemLabel="row"
+          onPageChange={(page) => patch({ page })}
+          onPageSizeChange={(pageSize) => patch({ pageSize })}
+        />
+      ) : null}
     </section>
   );
 }

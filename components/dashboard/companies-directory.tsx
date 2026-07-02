@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronRight, Search } from "lucide-react";
 
 import { PeriodLink } from "@/components/layout/period-link";
+import { PaginationBar, SortHeader } from "@/components/dashboard/table-controls";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/ui/states";
@@ -13,32 +14,45 @@ import {
   useCompanyReconciliation,
 } from "@/hooks/use-dashboard-queries";
 import { usePeriod } from "@/hooks/use-period";
+import { useCompanyTableParams } from "@/hooks/use-table-params";
 import { isMonthPeriod } from "@/lib/utils/periods";
 import type { CompanyReconciliation } from "@/lib/types/domain";
+import type { CompanyQuery } from "@/lib/validation/companies";
 
 export function CompaniesDirectory() {
   const { period } = usePeriod();
-  const companies = useCompanies();
-  const reconciliation = useCompanyReconciliation(period);
-  const [term, setTerm] = useState("");
+  const { query, patch, toggleSort } = useCompanyTableParams();
+  const companies = useCompanies(query);
+  const reconciliation = useCompanyReconciliation({
+    period,
+    q: query.q,
+    sort: query.sort,
+    order: query.order,
+    page: query.page,
+    pageSize: query.pageSize,
+  });
+  const [term, setTerm] = useState(query.q ?? "");
   const monthly = isMonthPeriod(period);
+
+  const [lastExternalQ, setLastExternalQ] = useState(query.q);
+  if (query.q !== lastExternalQ) {
+    setLastExternalQ(query.q);
+    setTerm(query.q ?? "");
+  }
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      if ((query.q ?? "") !== term) patch({ q: term || undefined });
+    }, 300);
+    return () => clearTimeout(id);
+  }, [term, query.q, patch]);
 
   // companyId → reconciliation row, for O(1) status lookups while rendering.
   const byId = useMemo(() => {
     const map = new Map<string, CompanyReconciliation>();
-    reconciliation.data?.forEach((r) => map.set(r.companyId, r));
+    reconciliation.data?.items.forEach((r) => map.set(r.companyId, r));
     return map;
   }, [reconciliation.data]);
-
-  const filtered = useMemo(() => {
-    const q = term.trim().toLowerCase();
-    const list = companies.data ?? [];
-    if (!q) return list;
-    return list.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) || c.taxId.toLowerCase().includes(q),
-    );
-  }, [companies.data, term]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -75,7 +89,7 @@ export function CompaniesDirectory() {
             ))}
           </div>
         </Card>
-      ) : filtered.length === 0 ? (
+      ) : companies.data.items.length === 0 ? (
         <EmptyState
           title="No companies match"
           description="Try a different name or tax ID."
@@ -86,8 +100,20 @@ export function CompaniesDirectory() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
-                  <th className="px-4 py-3 font-medium">Company</th>
-                  <th className="px-4 py-3 font-medium">Tax ID</th>
+                  <SortHeader<CompanyQuery["sort"]>
+                    label="Company"
+                    field="name"
+                    active={query.sort === "name"}
+                    order={query.order}
+                    onToggle={toggleSort}
+                  />
+                  <SortHeader<CompanyQuery["sort"]>
+                    label="Tax ID"
+                    field="tax_id"
+                    active={query.sort === "tax_id"}
+                    order={query.order}
+                    onToggle={toggleSort}
+                  />
                   <th className="px-4 py-3 text-right font-medium">
                     Active contracts
                   </th>
@@ -98,7 +124,7 @@ export function CompaniesDirectory() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((company) => {
+                {companies.data.items.map((company) => {
                   const recon = byId.get(company.id);
                   return (
                     <tr
@@ -145,6 +171,18 @@ export function CompaniesDirectory() {
           </div>
         </Card>
       )}
+
+      {companies.data && companies.data.items.length > 0 ? (
+        <PaginationBar
+          page={companies.data.page}
+          pageSize={companies.data.pageSize}
+          total={companies.data.total}
+          totalPages={companies.data.totalPages}
+          itemLabel="company"
+          onPageChange={(page) => patch({ page })}
+          onPageSizeChange={(pageSize) => patch({ pageSize })}
+        />
+      ) : null}
     </div>
   );
 }

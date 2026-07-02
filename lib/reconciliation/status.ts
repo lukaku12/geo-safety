@@ -37,3 +37,11 @@ export const OUTCOME_LABELS: Record<ReconciliationOutcome, string> = {
   unpaid: "No payments",
   inactive: "No active contract",
 };
+
+export const reconciliationOutcomes = [
+  "ok",
+  "underpaid",
+  "overpaid",
+  "unpaid",
+  "inactive",
+] as const satisfies readonly ReconciliationOutcome[];

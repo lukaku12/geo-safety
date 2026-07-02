@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/ui/states";
 import { TransactionFilters } from "@/components/dashboard/transaction-filters";
 import { TransactionsTable } from "@/components/dashboard/transactions-table";
 import { ManualMatchDialog } from "@/components/dashboard/manual-match-dialog";
+import { PaginationBar } from "@/components/dashboard/table-controls";
 import { useTransactions } from "@/hooks/use-dashboard-queries";
 import type { UseDashboardParams } from "@/hooks/use-dashboard-params";
 import type { Transaction } from "@/lib/types/domain";
@@ -82,30 +82,15 @@ export function TransactionsPanel({
       </Card>
 
       {data && data.items.length > 0 ? (
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            Page {data.page} of {data.totalPages} • {data.total} transaction
-            {data.total === 1 ? "" : "s"}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={data.page <= 1}
-              onClick={() => patch({ page: data.page - 1 })}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={data.page >= data.totalPages}
-              onClick={() => patch({ page: data.page + 1 })}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
+        <PaginationBar
+          page={data.page}
+          pageSize={data.pageSize}
+          total={data.total}
+          totalPages={data.totalPages}
+          itemLabel="transaction"
+          onPageChange={(page) => patch({ page })}
+          onPageSizeChange={(pageSize) => patch({ pageSize })}
+        />
       ) : null}
 
       {selected ? (

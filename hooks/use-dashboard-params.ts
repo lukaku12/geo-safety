@@ -10,7 +10,10 @@ import {
 import { DEFAULT_PERIOD } from "@/lib/utils/periods";
 
 type FilterUpdate = Partial<
-  Pick<TransactionQuery, "status" | "q" | "period" | "sort" | "order" | "page">
+  Pick<
+    TransactionQuery,
+    "status" | "q" | "period" | "sort" | "order" | "page" | "pageSize"
+  >
 >;
 
 /**

@@ -84,7 +84,7 @@ export async function listTransactions(
   // Secondary sort by id keeps pagination deterministic when the primary key
   // (e.g. amount or date) has ties.
   const { data, error, count } = await builder
-    .order(sort, { ascending: order === "asc" })
+    .order(sort, { ascending: order === "asc", nullsFirst: false })
     .order("id", { ascending: true })
     .range(from, to);
 

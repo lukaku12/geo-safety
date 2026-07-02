@@ -6,7 +6,7 @@ import { Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { TransactionStatusBadge } from "@/components/dashboard/status-badges";
-import { useCompanies } from "@/hooks/use-dashboard-queries";
+import { useCompanyOptions } from "@/hooks/use-dashboard-queries";
 import { useUpdateTransaction } from "@/hooks/use-dashboard-mutations";
 import { suggestCompany } from "@/lib/reconciliation/suggest";
 import type { Transaction } from "@/lib/types/domain";
@@ -25,7 +25,7 @@ export function ManualMatchDialog({
   transaction: Transaction;
   onClose: () => void;
 }) {
-  const { data: companies, isPending: companiesLoading } = useCompanies();
+  const { data: companies, isPending: companiesLoading } = useCompanyOptions();
   const update = useUpdateTransaction();
 
   // null = untouched by the user, so the suggestion (once companies load) can

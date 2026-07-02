@@ -14,7 +14,12 @@ export const transactionStatusSchema = z.enum([
   "ignored",
 ]);
 
-export const sortFieldSchema = z.enum(["entry_date", "amount"]);
+export const sortFieldSchema = z.enum([
+  "entry_date",
+  "sender_name",
+  "amount",
+  "status",
+]);
 export const sortOrderSchema = z.enum(["asc", "desc"]);
 
 const periodSchema = z

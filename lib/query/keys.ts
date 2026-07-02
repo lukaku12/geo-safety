@@ -1,3 +1,5 @@
+import type { CompanyQuery } from "@/lib/validation/companies";
+import type { CompanyReconciliationQuery } from "@/lib/validation/reconciliation";
 import type { TransactionQuery } from "@/lib/validation/transactions";
 import type { PeriodKey } from "@/lib/utils/periods";
 
@@ -13,10 +15,13 @@ export const keys = {
   stats: (period: PeriodKey) => [...keys.all, "stats", period] as const,
 
   companies: () => [...keys.all, "companies"] as const,
-  companyDetail: (id: string) => [...keys.companies(), id] as const,
+  companyList: (filters: CompanyQuery) =>
+    [...keys.companies(), "list", filters] as const,
+  companyOptions: () => [...keys.companies(), "options"] as const,
+  companyDetail: (id: string) => [...keys.companies(), "detail", id] as const,
 
-  companyReconciliation: (period: PeriodKey) =>
-    [...keys.all, "company-reconciliation", period] as const,
+  companyReconciliation: (filters: CompanyReconciliationQuery) =>
+    [...keys.all, "company-reconciliation", filters] as const,
 
   transactions: () => [...keys.all, "transactions"] as const,
   transactionList: (filters: TransactionQuery) =>

@@ -52,11 +52,22 @@ export function CompanyDetail() {
   const id = params.id;
   const { period } = usePeriod();
   const detail = useCompanyDetail(id);
-  const reconciliation = useCompanyReconciliation(period);
+  const reconciliation = useCompanyReconciliation(
+    {
+      period,
+      q: detail.data?.taxId,
+      page: 1,
+      pageSize: 1,
+      sort: "name",
+      order: "asc",
+    },
+    { enabled: Boolean(detail.data) },
+  );
   const monthly = isMonthPeriod(period);
 
   const recon = useMemo(
-    () => reconciliation.data?.find((r) => r.companyId === id) ?? null,
+    () =>
+      reconciliation.data?.items.find((row) => row.companyId === id) ?? null,
     [reconciliation.data, id],
   );
 

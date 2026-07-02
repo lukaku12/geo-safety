@@ -1,54 +1,13 @@
 "use client";
 
-import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
-
 import { TransactionStatusBadge } from "@/components/dashboard/status-badges";
+import { SortHeader } from "@/components/dashboard/table-controls";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils/cn";
 import type { Transaction } from "@/lib/types/domain";
 import type { UseDashboardParams } from "@/hooks/use-dashboard-params";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 
 type SortField = UseDashboardParams["query"]["sort"];
-
-function SortHeader({
-  label,
-  field,
-  active,
-  order,
-  onToggle,
-  align = "left",
-}: {
-  label: string;
-  field: SortField;
-  active: boolean;
-  order: "asc" | "desc";
-  onToggle: (field: SortField) => void;
-  align?: "left" | "right";
-}) {
-  const Icon = !active ? ChevronsUpDown : order === "asc" ? ArrowUp : ArrowDown;
-  return (
-    <th
-      className={cn(
-        "px-4 py-3 font-medium",
-        align === "right" ? "text-right" : "text-left",
-      )}
-    >
-      <button
-        type="button"
-        onClick={() => onToggle(field)}
-        className={cn(
-          "inline-flex items-center gap-1 hover:text-foreground",
-          align === "right" && "flex-row-reverse",
-          active ? "text-foreground" : "text-muted-foreground",
-        )}
-      >
-        {label}
-        <Icon className="h-3.5 w-3.5" />
-      </button>
-    </th>
-  );
-}
 
 export function TransactionsTable({
   transactions,
@@ -75,7 +34,13 @@ export function TransactionsTable({
               order={order}
               onToggle={onToggleSort}
             />
-            <th className="px-4 py-3 font-medium">Sender</th>
+            <SortHeader
+              label="Sender"
+              field="sender_name"
+              active={sort === "sender_name"}
+              order={order}
+              onToggle={onToggleSort}
+            />
             <th className="px-4 py-3 font-medium">Purpose</th>
             <SortHeader
               label="Amount"
@@ -85,7 +50,13 @@ export function TransactionsTable({
               onToggle={onToggleSort}
               align="right"
             />
-            <th className="px-4 py-3 font-medium">Status</th>
+            <SortHeader
+              label="Status"
+              field="status"
+              active={sort === "status"}
+              order={order}
+              onToggle={onToggleSort}
+            />
             <th className="px-4 py-3 font-medium">Matched company</th>
             <th className="px-4 py-3 text-right font-medium">
               <span className="sr-only">Actions</span>

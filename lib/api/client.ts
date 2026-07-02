@@ -8,10 +8,12 @@ import type {
   RunReconciliationResult,
   Transaction,
 } from "@/lib/types/domain";
+import type { CompanyQuery } from "@/lib/validation/companies";
 import type {
   TransactionQuery,
   UpdateTransactionInput,
 } from "@/lib/validation/transactions";
+import type { CompanyReconciliationQuery } from "@/lib/validation/reconciliation";
 import type { PeriodKey } from "@/lib/utils/periods";
 
 /** Error thrown by the client fetchers, carrying the server status + message. */
@@ -45,15 +47,11 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
-function toSearchParams(query: TransactionQuery): string {
+function toSearchParams(query: Record<string, string | number | undefined>): string {
   const params = new URLSearchParams();
-  if (query.status) params.set("status", query.status);
-  if (query.q) params.set("q", query.q);
-  params.set("period", query.period);
-  params.set("sort", query.sort);
-  params.set("order", query.order);
-  params.set("page", String(query.page));
-  params.set("pageSize", String(query.pageSize));
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined && value !== "") params.set(key, String(value));
+  }
   return params.toString();
 }
 
@@ -76,12 +74,18 @@ export const api = {
     return fetchJson(`/api/stats?period=${encodeURIComponent(period)}`);
   },
 
-  getCompanyReconciliation(period: string): Promise<CompanyReconciliation[]> {
-    return fetchJson(`/api/reconciliation?period=${encodeURIComponent(period)}`);
+  getCompanyReconciliationPage(
+    query: CompanyReconciliationQuery,
+  ): Promise<Paginated<CompanyReconciliation>> {
+    return fetchJson(`/api/reconciliation?${toSearchParams(query)}`);
   },
 
-  getCompanies(): Promise<Company[]> {
-    return fetchJson("/api/companies");
+  getCompanies(query: CompanyQuery): Promise<Paginated<Company>> {
+    return fetchJson(`/api/companies?${toSearchParams(query)}`);
+  },
+
+  getCompanyOptions(): Promise<Company[]> {
+    return fetchJson("/api/companies/options");
   },
 
   getCompanyDetail(id: string): Promise<CompanyDetail> {

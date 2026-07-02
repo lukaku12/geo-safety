@@ -5,6 +5,8 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api/client";
 import { keys } from "@/lib/query/keys";
 import { isMonthPeriod, type PeriodKey } from "@/lib/utils/periods";
+import type { CompanyQuery } from "@/lib/validation/companies";
+import type { CompanyReconciliationQuery } from "@/lib/validation/reconciliation";
 import type { TransactionQuery } from "@/lib/validation/transactions";
 
 export function useStats(period: PeriodKey) {
@@ -17,10 +19,19 @@ export function useStats(period: PeriodKey) {
   });
 }
 
-export function useCompanies() {
+export function useCompanies(query: CompanyQuery) {
   return useQuery({
-    queryKey: keys.companies(),
-    queryFn: () => api.getCompanies(),
+    queryKey: keys.companyList(query),
+    queryFn: () => api.getCompanies(query),
+    placeholderData: keepPreviousData,
+    staleTime: 10 * 60_000, // company list rarely changes
+  });
+}
+
+export function useCompanyOptions() {
+  return useQuery({
+    queryKey: keys.companyOptions(),
+    queryFn: () => api.getCompanyOptions(),
     staleTime: 10 * 60_000, // company list rarely changes
   });
 }
@@ -33,12 +44,15 @@ export function useCompanyDetail(id: string) {
   });
 }
 
-export function useCompanyReconciliation(period: PeriodKey) {
+export function useCompanyReconciliation(
+  query: CompanyReconciliationQuery,
+  options: { enabled?: boolean } = {},
+) {
   return useQuery({
-    queryKey: keys.companyReconciliation(period),
-    queryFn: () => api.getCompanyReconciliation(period),
+    queryKey: keys.companyReconciliation(query),
+    queryFn: () => api.getCompanyReconciliationPage(query),
     // Expected-vs-actual only makes sense for a concrete month.
-    enabled: isMonthPeriod(period),
+    enabled: isMonthPeriod(query.period as PeriodKey) && options.enabled !== false,
     // Keep the previous month's rows visible while the next month loads, so
     // switching months doesn't flash the skeleton (or the "Needs attention"
     // card popping in and out) before the real numbers are in.
