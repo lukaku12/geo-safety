@@ -1,16 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Sparkles, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { TransactionStatusBadge } from "@/components/dashboard/status-badges";
 import { useCompanies } from "@/hooks/use-dashboard-queries";
 import { useUpdateTransaction } from "@/hooks/use-dashboard-mutations";
+import { suggestCompany } from "@/lib/reconciliation/suggest";
 import type { Transaction } from "@/lib/types/domain";
 import type { UpdateTransactionInput } from "@/lib/validation/transactions";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
+
+const SUGGESTION_REASONS = {
+  inn: "the sender INN equals this company's tax ID",
+  name: "the sender name resembles this company",
+} as const;
 
 export function ManualMatchDialog({
   transaction,
@@ -21,9 +27,22 @@ export function ManualMatchDialog({
 }) {
   const { data: companies, isPending: companiesLoading } = useCompanies();
   const update = useUpdateTransaction();
-  const [companyId, setCompanyId] = useState(
-    transaction.matchedCompany?.id ?? "",
+
+  // null = untouched by the user, so the suggestion (once companies load) can
+  // drive the select without any state syncing; "" = explicitly cleared.
+  const [companyId, setCompanyId] = useState<string | null>(
+    transaction.matchedCompany?.id ?? null,
   );
+
+  const suggestion = useMemo(
+    () => (companies ? suggestCompany(transaction, companies) : null),
+    [companies, transaction],
+  );
+  const selectedId = companyId ?? suggestion?.company.id ?? "";
+  const showSuggestionHint =
+    suggestion !== null &&
+    selectedId === suggestion.company.id &&
+    transaction.matchedCompany?.id !== selectedId;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -109,7 +128,7 @@ export function ManualMatchDialog({
             <Select
               id="company"
               className="w-full"
-              value={companyId}
+              value={selectedId}
               disabled={companiesLoading}
               onChange={(e) => setCompanyId(e.target.value)}
             >
@@ -120,6 +139,12 @@ export function ManualMatchDialog({
                 </option>
               ))}
             </Select>
+            {showSuggestionHint ? (
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Sparkles className="h-3.5 w-3.5 shrink-0 text-primary" />
+                Suggested match — {SUGGESTION_REASONS[suggestion.reason]}.
+              </p>
+            ) : null}
           </div>
 
           {update.isError ? (
@@ -156,8 +181,8 @@ export function ManualMatchDialog({
           </div>
           <Button
             size="sm"
-            disabled={!companyId || update.isPending}
-            onClick={() => apply({ action: "match", companyId })}
+            disabled={!selectedId || update.isPending}
+            onClick={() => apply({ action: "match", companyId: selectedId })}
           >
             {update.isPending ? "Saving…" : "Match company"}
           </Button>

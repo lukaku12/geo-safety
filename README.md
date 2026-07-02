@@ -168,7 +168,11 @@ Per company, per month (`company_reconciliation(period_start, period_end)`):
   over name/INN/purpose), **sortable** columns, and **pagination** — all driven
   by **URL state** so views are shareable and survive refresh/back.
 - **Manual reconciliation**: match to a company, ignore, or reset, with
-  **optimistic updates** and automatic cache invalidation.
+  **optimistic updates** and automatic cache invalidation. The dialog
+  **suggests the likely company** (bonus): exact INN → tax-ID equality first,
+  then fuzzy name matching that ignores legal forms and branch suffixes — so
+  _"გეოტრანსი (ფილიალი)"_ pre-selects _"შპს გეოტრანსი"_
+  (`lib/reconciliation/suggest.ts`).
 - **One-click INN auto-match** with an inline result summary.
 - **Month selector** (April–June 2026 seed data) wiring stats, the per-company
   view, and the transaction list together.
@@ -248,7 +252,7 @@ npx tsc --noEmit             # typecheck
 **What I'd add next given more time:**
 
 - Auth + Supabase **Row Level Security** (the task scopes auth out).
-- Fuzzy/suggested matching for unmatched rows (name similarity, amount
-  proximity) surfaced as ranked suggestions in the manual-match dialog.
-- A dedicated per-company drill-down view and month-over-month trends.
+- Ranked multi-candidate suggestions (name similarity scores, amount
+  proximity) on top of the current single best-guess suggestion.
+- Month-over-month trends on the company drill-down view.
 - E2E tests with `@next/playwright`, including an `instant()` navigation check.

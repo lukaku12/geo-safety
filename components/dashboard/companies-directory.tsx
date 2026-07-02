@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { ChevronRight, Search } from "lucide-react";
 
+import { PeriodLink } from "@/components/layout/period-link";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/ui/states";
@@ -39,8 +39,6 @@ export function CompaniesDirectory() {
         c.name.toLowerCase().includes(q) || c.taxId.toLowerCase().includes(q),
     );
   }, [companies.data, term]);
-
-  const periodSuffix = monthly ? `?period=${period}` : "";
 
   return (
     <div className="flex flex-col gap-4">
@@ -108,12 +106,12 @@ export function CompaniesDirectory() {
                       className="border-b border-border last:border-0 hover:bg-surface-muted/60"
                     >
                       <td className="px-4 py-3 font-medium">
-                        <Link
-                          href={`/companies/${company.id}${periodSuffix}`}
+                        <PeriodLink
+                          href={`/companies/${company.id}`}
                           className="hover:text-primary hover:underline"
                         >
                           {company.name}
-                        </Link>
+                        </PeriodLink>
                       </td>
                       <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                         {company.taxId}
@@ -131,13 +129,13 @@ export function CompaniesDirectory() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <Link
-                          href={`/companies/${company.id}${periodSuffix}`}
+                        <PeriodLink
+                          href={`/companies/${company.id}`}
                           aria-label={`View ${company.name}`}
                           className="inline-flex text-muted-foreground hover:text-foreground"
                         >
                           <ChevronRight className="h-4 w-4" />
-                        </Link>
+                        </PeriodLink>
                       </td>
                     </tr>
                   );

@@ -47,7 +47,7 @@ export function CompanyReconciliationTable({
   outcomeFilter?: ReconciliationOutcome | "all";
 }) {
   const enabled = isMonthPeriod(period);
-  const { data: raw, isPending, isError, refetch } =
+  const { data: raw, isPending, isPlaceholderData, isError, refetch } =
     useCompanyReconciliation(period);
 
   const data = useMemo(
@@ -112,7 +112,12 @@ export function CompanyReconciliationTable({
         />
       ) : (
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
+          <div
+            className={cn(
+              "overflow-x-auto",
+              isPlaceholderData && "opacity-60 transition-opacity",
+            )}
+          >
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">

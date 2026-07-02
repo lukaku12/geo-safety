@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
+import { PeriodLink } from "@/components/layout/period-link";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,15 +36,14 @@ const CONTRACT_LABEL: Record<ContractStatus, string> = {
   ended: "Ended",
 };
 
-function BackLink({ period }: { period: string }) {
-  const suffix = isMonthPeriod(period) ? `?period=${period}` : "";
+function BackLink() {
   return (
-    <Link
-      href={`/companies${suffix}`}
+    <PeriodLink
+      href="/companies"
       className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
     >
       <ArrowLeft className="h-4 w-4" /> Back to companies
-    </Link>
+    </PeriodLink>
   );
 }
 
@@ -64,7 +63,7 @@ export function CompanyDetail() {
   if (detail.isError) {
     return (
       <div className="flex flex-col gap-4">
-        <BackLink period={period} />
+        <BackLink />
         <ErrorState
           title="Couldn't load company"
           description="It may not exist, or the service is unavailable."
@@ -84,7 +83,7 @@ export function CompanyDetail() {
 
   return (
     <div className="flex flex-col gap-6">
-      <BackLink period={period} />
+      <BackLink />
 
       <div className="flex flex-col gap-1">
         {detail.isPending ? (

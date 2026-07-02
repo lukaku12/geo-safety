@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/states";
 import { useStats } from "@/hooks/use-dashboard-queries";
+import { cn } from "@/lib/utils/cn";
 import type { ReconciliationStats } from "@/lib/types/domain";
 import type { PeriodKey } from "@/lib/utils/periods";
 import {
@@ -61,7 +62,8 @@ function buildCards(stats: ReconciliationStats) {
 }
 
 export function StatsCards({ period }: { period: PeriodKey }) {
-  const { data, isPending, isError, refetch } = useStats(period);
+  const { data, isPending, isPlaceholderData, isError, refetch } =
+    useStats(period);
 
   if (isError) {
     return (
@@ -100,7 +102,12 @@ export function StatsCards({ period }: { period: PeriodKey }) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div
+      className={cn(
+        "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4",
+        isPlaceholderData && "opacity-60 transition-opacity",
+      )}
+    >
       {buildCards(data).map((card) => (
         <StatCard key={card.title} {...card} />
       ))}

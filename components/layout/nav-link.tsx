@@ -1,14 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils/cn";
+import { PeriodLink } from "@/components/layout/period-link";
 import type { NavItem } from "@/components/layout/nav-items";
 
 /**
- * Sidebar link with active state. Carries the current `?period` forward so
- * switching pages keeps the selected month (see `usePeriod`).
+ * Sidebar link with active state. Renders through `PeriodLink` so switching
+ * pages keeps the selected month (see `usePeriod`).
  */
 export function NavLink({
   item,
@@ -18,20 +18,17 @@ export function NavLink({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const active =
     item.href === "/"
       ? pathname === "/"
       : pathname.startsWith(item.href);
 
-  const period = searchParams.get("period");
-  const href = period ? `${item.href}?period=${period}` : item.href;
   const Icon = item.icon;
 
   return (
-    <Link
-      href={href}
+    <PeriodLink
+      href={item.href}
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
       className={cn(
@@ -43,6 +40,6 @@ export function NavLink({
     >
       <Icon className="h-5 w-5 shrink-0" />
       {item.label}
-    </Link>
+    </PeriodLink>
   );
 }

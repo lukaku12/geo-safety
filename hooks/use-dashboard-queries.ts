@@ -11,6 +11,9 @@ export function useStats(period: PeriodKey) {
   return useQuery({
     queryKey: keys.stats(period),
     queryFn: () => api.getStats(period),
+    // Keep the previous month's numbers visible while the next month loads,
+    // instead of flashing back to the loading skeleton on every switch.
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -36,6 +39,10 @@ export function useCompanyReconciliation(period: PeriodKey) {
     queryFn: () => api.getCompanyReconciliation(period),
     // Expected-vs-actual only makes sense for a concrete month.
     enabled: isMonthPeriod(period),
+    // Keep the previous month's rows visible while the next month loads, so
+    // switching months doesn't flash the skeleton (or the "Needs attention"
+    // card popping in and out) before the real numbers are in.
+    placeholderData: keepPreviousData,
   });
 }
 
