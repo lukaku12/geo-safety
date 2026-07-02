@@ -38,6 +38,33 @@ export function useRunReconciliation() {
   });
 }
 
+/** Restore the seeded state (all transactions unmatched), then refresh. */
+export function useResetReconciliation() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: () => api.resetReconciliation(),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: keys.all });
+      toast({
+        tone: "success",
+        title: "Database reset",
+        description: `Restored ${result.resetCount} transaction${
+          result.resetCount === 1 ? "" : "s"
+        } to the seeded state.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        tone: "error",
+        title: "Reset failed",
+        description: errorMessage(error, "Please try again."),
+      });
+    },
+  });
+}
+
 /** Compute the optimistic row for an action without waiting for the server. */
 function applyOptimistic(
   txn: Transaction,

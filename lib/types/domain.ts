@@ -93,3 +93,8 @@ export interface RunReconciliationResult {
   unmatchedCount: number;
   totalProcessed: number;
 }
+
+export interface ResetReconciliationResult {
+  /** How many transactions were restored to the seeded `unmatched` state. */
+  resetCount: number;
+}

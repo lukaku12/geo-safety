@@ -4,6 +4,7 @@ import type {
   CompanyReconciliation,
   Paginated,
   ReconciliationStats,
+  ResetReconciliationResult,
   RunReconciliationResult,
   Transaction,
 } from "@/lib/types/domain";
@@ -89,5 +90,9 @@ export const api = {
 
   runReconciliation(): Promise<RunReconciliationResult> {
     return fetchJson("/api/reconciliation/run", { method: "POST" });
+  },
+
+  resetReconciliation(): Promise<ResetReconciliationResult> {
+    return fetchJson("/api/reconciliation/reset", { method: "POST" });
   },
 };

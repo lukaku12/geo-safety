@@ -1,13 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Menu, RefreshCw } from "lucide-react";
+import { Menu, RefreshCw, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { titleForPath } from "@/components/layout/nav-items";
 import { usePeriod } from "@/hooks/use-period";
-import { useRunReconciliation } from "@/hooks/use-dashboard-mutations";
+import {
+  useResetReconciliation,
+  useRunReconciliation,
+} from "@/hooks/use-dashboard-mutations";
 import { getPeriodOptions } from "@/lib/utils/periods";
 import { cn } from "@/lib/utils/cn";
 
@@ -15,7 +19,25 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
   const pathname = usePathname();
   const { period, setPeriod } = usePeriod();
   const run = useRunReconciliation();
+  const reset = useResetReconciliation();
   const options = getPeriodOptions();
+
+  // Two-step confirm: the first click arms the button, a second within 4s fires.
+  const [confirming, setConfirming] = useState(false);
+  useEffect(() => {
+    if (!confirming) return;
+    const id = setTimeout(() => setConfirming(false), 4000);
+    return () => clearTimeout(id);
+  }, [confirming]);
+
+  const onReset = () => {
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+    setConfirming(false);
+    reset.mutate();
+  };
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-surface/80 px-4 backdrop-blur sm:px-6">
@@ -44,6 +66,26 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
             </option>
           ))}
         </Select>
+
+        <Button
+          variant={confirming ? "danger" : "secondary"}
+          onClick={onReset}
+          disabled={reset.isPending}
+          aria-label="Reset database to seeded state"
+          title="Reset all transactions to their original unmatched state"
+          className="whitespace-nowrap"
+        >
+          <RotateCcw
+            className={cn("h-4 w-4", reset.isPending && "animate-spin")}
+          />
+          <span className="hidden sm:inline">
+            {reset.isPending
+              ? "Resetting…"
+              : confirming
+                ? "Confirm reset"
+                : "Reset"}
+          </span>
+        </Button>
 
         <Button
           onClick={() => run.mutate()}

@@ -4,6 +4,7 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   CompanyReconciliation,
   ReconciliationStats,
+  ResetReconciliationResult,
   RunReconciliationResult,
 } from "@/lib/types/domain";
 import { getPeriodRange, type PeriodKey } from "@/lib/utils/periods";
@@ -26,6 +27,31 @@ export async function runReconciliation(): Promise<RunReconciliationResult> {
     unmatchedCount: row?.unmatched_count ?? 0,
     totalProcessed: row?.total_processed ?? 0,
   };
+}
+
+/**
+ * Restore the seeded state: every transaction back to `unmatched` with its
+ * match metadata cleared. A single set-based UPDATE scoped to rows that have
+ * drifted from seed (anything not already `unmatched`), so the returned count
+ * reflects exactly what changed. Undoes both auto- and manual reconciliation.
+ */
+export async function resetReconciliation(): Promise<ResetReconciliationResult> {
+  const supabase = getSupabaseServerClient();
+
+  const { data, error } = await supabase
+    .from("bank_transactions")
+    .update({
+      matched_company_id: null,
+      match_method: null,
+      match_confidence: null,
+      status: "unmatched",
+    })
+    .neq("status", "unmatched")
+    .select("id");
+
+  if (error) throw new ServiceError(`Reset failed: ${error.message}`);
+
+  return { resetCount: data?.length ?? 0 };
 }
 
 export async function getStats(
