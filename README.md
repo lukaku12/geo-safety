@@ -9,7 +9,7 @@ Built as a take-home with a deliberate focus on **clean layering, type-safety
 end-to-end, and an architecture that holds up at scale** (millions of
 transactions).
 
-> **Live demo:** _add your Vercel URL here after deploying_
+> **Live demo:** https://geo-safety-opal.vercel.app
 > **Walkthrough video:** _add your 5-minute screen recording link here_
 
 ---
