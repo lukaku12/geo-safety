@@ -51,44 +51,47 @@
   --radius: 0.75rem;
 }
 
-/* Dark palette, shared by the system-preference fallback and the forced state. */
-@layer base {
-  :root.theme-dark {
-    --background: #0a0e16;
-    --foreground: #e6e9ef;
+/*
+ * Dark palette for the forced-dark state. Deliberately NOT inside an @layer:
+ * the light `:root` tokens above are unlayered, and unlayered rules win over
+ * layered ones regardless of specificity. Keeping this unlayered lets the
+ * higher-specificity `:root.theme-dark` override the base `:root`.
+ */
+:root.theme-dark {
+  --background: #0a0e16;
+  --foreground: #e6e9ef;
 
-    --surface: #111623;
-    --surface-muted: #161c2b;
+  --surface: #111623;
+  --surface-muted: #161c2b;
 
-    --card: #111623;
-    --card-foreground: #e6e9ef;
+  --card: #111623;
+  --card-foreground: #e6e9ef;
 
-    --border: #232a3a;
-    --input: #232a3a;
-    --ring: #3b82f6;
+  --border: #232a3a;
+  --input: #232a3a;
+  --ring: #3b82f6;
 
-    --muted: #161c2b;
-    --muted-foreground: #94a0b8;
+  --muted: #161c2b;
+  --muted-foreground: #94a0b8;
 
-    --primary: #3b82f6;
-    --primary-foreground: #0a0e16;
+  --primary: #3b82f6;
+  --primary-foreground: #0a0e16;
 
-    --success: #4ade80;
-    --success-foreground: #052e16;
-    --success-soft: #0f2417;
+  --success: #4ade80;
+  --success-foreground: #052e16;
+  --success-soft: #0f2417;
 
-    --warning: #fbbf24;
-    --warning-foreground: #2a1c00;
-    --warning-soft: #271d05;
+  --warning: #fbbf24;
+  --warning-foreground: #2a1c00;
+  --warning-soft: #271d05;
 
-    --danger: #f87171;
-    --danger-foreground: #2a0a0a;
-    --danger-soft: #2a1212;
+  --danger: #f87171;
+  --danger-foreground: #2a0a0a;
+  --danger-soft: #2a1212;
 
-    --info: #60a5fa;
-    --info-foreground: #061224;
-    --info-soft: #0c1e36;
-  }
+  --info: #60a5fa;
+  --info-foreground: #061224;
+  --info-soft: #0c1e36;
 }
 
 @theme inline {
