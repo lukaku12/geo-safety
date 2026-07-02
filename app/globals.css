@@ -5,12 +5,11 @@
  * Single source of truth for color + radius, mapped into Tailwind v4 utilities
  * via `@theme inline` (e.g. `bg-surface`, `text-muted-foreground`, `border-border`).
  *
- * Theming is attribute-driven with a system fallback, giving three states:
- *   - no `data-theme`        → follow the OS preference
- *   - data-theme="light"     → force light
- *   - data-theme="dark"      → force dark
- * The dark token block is therefore applied under both the prefers-dark media
- * query (when not explicitly forced to light) and the explicit dark attribute.
+ * Theming is class-driven: dark mode is exactly `.theme-dark` on <html>. The
+ * pre-paint script in app/layout.tsx resolves the stored preference (or the OS
+ * setting when on "system") into that class before first paint, and
+ * hooks/use-theme.ts keeps it in sync afterwards — CSS itself never branches on
+ * the media query, so there is a single source of truth for "is dark".
  */
 :root {
   --background: #f7f8fa;

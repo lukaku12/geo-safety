@@ -17,7 +17,7 @@ const TOOLTIP_STYLE = {
 export function StatusDonut({ stats }: { stats: ReconciliationStats }) {
   const data = [
     { name: "Matched", value: stats.matchedCount, color: "var(--success)" },
-    { name: "Unmatched", value: stats.unmatchedCount, color: "var(--warning)" },
+    { name: "Unmatched", value: stats.unmatchedCount, color: "var(--danger)" },
     { name: "Ignored", value: stats.ignoredCount, color: "var(--muted-foreground)" },
   ].filter((d) => d.value > 0);
 

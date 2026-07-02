@@ -51,7 +51,10 @@ export type TransactionQuery = z.infer<typeof transactionQuerySchema>;
 export const updateTransactionSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("match"),
-    companyId: z.string().uuid(),
+    // guid, not uuid: Zod 4's z.uuid() enforces RFC 4122 variant bits, which
+    // the seeded (hand-crafted) company ids don't all carry. The FK constraint
+    // is the real existence check; this only guards the shape.
+    companyId: z.guid(),
   }),
   z.object({ action: z.literal("ignore") }),
   z.object({ action: z.literal("unmatch") }),

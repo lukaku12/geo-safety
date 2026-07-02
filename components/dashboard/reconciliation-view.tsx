@@ -15,6 +15,7 @@ const FILTERS: { value: OutcomeFilter; label: string }[] = [
   { value: "underpaid", label: "Underpaid" },
   { value: "overpaid", label: "Overpaid" },
   { value: "ok", label: "On track" },
+  { value: "unpaid", label: "No payments" },
   { value: "inactive", label: "No contract" },
 ];
 

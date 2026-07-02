@@ -64,9 +64,10 @@ export interface ReconciliationStats {
 /** Outcome of comparing what a company owes vs. what actually arrived. */
 export type ReconciliationOutcome =
   | "ok" // paid == expected (within rounding tolerance)
-  | "underpaid" // paid < expected
-  | "overpaid" // paid > expected
-  | "inactive"; // no active contract and nothing received
+  | "underpaid" // paid something, but less than expected
+  | "overpaid" // paid more than expected
+  | "unpaid" // a contract billed this month but nothing arrived
+  | "inactive"; // no contract billed this month and nothing arrived
 
 export interface CompanyReconciliation {
   companyId: string;

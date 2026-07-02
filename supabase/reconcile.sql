@@ -104,10 +104,13 @@ $$;
 -- ────────────────────────────────────────────────────────────────────────────
 -- 3. Expected vs. actual, per company, for a billing period
 --
---   expected = Σ monthly_amount of contracts that are ACTIVE *and* in force
---              during the period (status = 'active' AND the period overlaps
---              [start_date, end_date]). Paused/ended contracts are excluded,
---              matching the brief: only active, non-archived contracts bill.
+--   expected = Σ monthly_amount of contracts that were active DURING THE
+--              PERIOD. Contract status is point-in-time ("paused"/"ended" is
+--              what the contract is *now*), so historical months are resolved
+--              by date: a contract billed in a month iff it had started by the
+--              period's end and had not yet stopped (end_date) before the
+--              period began. E.g. a contract paused on 2026-05-15 still bills
+--              April and May 2026, but not June.
 --   actual   = Σ amount of that company's MATCHED transactions in the period.
 --
 -- Lateral subqueries keep this to one index-driven pass per company instead of
@@ -146,9 +149,16 @@ as $$
       count(*)               as active_contract_count
     from public.contracts ct
     where ct.company_id = c.id
-      and ct.status = 'active'
       and ct.start_date <= p_period_end
-      and (ct.end_date is null or ct.end_date >= p_period_start)
+      and case
+            -- Ongoing contracts bill every month; an active contract with an
+            -- end_date stops billing after it.
+            when ct.status = 'active'
+              then ct.end_date is null or ct.end_date >= p_period_start
+            -- Paused/ended contracts bill months up to their stop date. One
+            -- with no end_date has no known stop point, so it never bills.
+            else ct.end_date is not null and ct.end_date >= p_period_start
+          end
   ) exp on true
   left join lateral (
     select

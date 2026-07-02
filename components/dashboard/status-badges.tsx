@@ -10,7 +10,7 @@ const TXN_STATUS: Record<
   { tone: BadgeTone; label: string }
 > = {
   matched: { tone: "success", label: "Matched" },
-  unmatched: { tone: "warning", label: "Unmatched" },
+  unmatched: { tone: "danger", label: "Unmatched" },
   ignored: { tone: "neutral", label: "Ignored" },
 };
 
@@ -23,10 +23,13 @@ export function TransactionStatusBadge({
   return <Badge tone={tone}>{label}</Badge>;
 }
 
+// Brief's color rule: green when paid >= expected (incl. overpaid), red when
+// paid less, grey when nothing was paid at all.
 const OUTCOME_TONE: Record<ReconciliationOutcome, BadgeTone> = {
   ok: "success",
   underpaid: "danger",
-  overpaid: "warning",
+  overpaid: "success",
+  unpaid: "neutral",
   inactive: "neutral",
 };
 

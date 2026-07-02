@@ -144,14 +144,17 @@ reconciliation workflow.
 
 Per company, per month (`company_reconciliation(period_start, period_end)`):
 
-- **expected** = Σ `monthly_amount` of contracts that are **`active`** *and* in
-  force during the month (the period overlaps `[start_date, end_date]`).
-  Paused/ended contracts are excluded — only active, non-archived contracts
-  bill.
+- **expected** = Σ `monthly_amount` of contracts that were **active during that
+  month**. Contract `status` is point-in-time (what the contract is *now*), so
+  historical months are resolved by date: a contract bills a month iff it had
+  started by the month's end and hadn't stopped (`end_date`) before the month
+  began. Example from the seed: Safe Transport's contract is `paused` with
+  `end_date = 2026-05-15`, so it still bills April and May 2026 — but not June.
 - **actual** = Σ `amount` of that company's **matched** transactions in the month.
 - **verdict** (`lib/reconciliation/status.ts`, the one place this rule lives):
   `on track` (within rounding tolerance) · `underpaid` · `overpaid` ·
-  `no active contract`.
+  `no payments` · `no active contract` — colored per the brief: green when paid
+  ≥ expected, red when paid less, grey when nothing was paid.
 
 ---
 

@@ -32,10 +32,15 @@ function retryAction(refetch: () => void) {
   );
 }
 
-/** Companies that are over/underpaid, worst first — the operator's worklist. */
+/** Companies whose billing didn't reconcile, worst first — the operator's worklist. */
 function needsAttention(rows: CompanyReconciliation[]): CompanyReconciliation[] {
   return rows
-    .filter((r) => r.outcome === "underpaid" || r.outcome === "overpaid")
+    .filter(
+      (r) =>
+        r.outcome === "underpaid" ||
+        r.outcome === "overpaid" ||
+        r.outcome === "unpaid",
+    )
     .sort((a, b) => Math.abs(b.difference) - Math.abs(a.difference))
     .slice(0, 5);
 }
