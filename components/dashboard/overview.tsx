@@ -47,6 +47,14 @@ function needsAttention(rows: CompanyReconciliation[]): CompanyReconciliation[] 
     .slice(0, 5);
 }
 
+function reconciliationItemHref(row: CompanyReconciliation): string {
+  const params = new URLSearchParams({
+    q: row.taxId,
+    outcome: row.outcome,
+  });
+  return `/reconciliation?${params.toString()}`;
+}
+
 export function Overview() {
   const { period } = usePeriod();
   const stats = useStats(period);
@@ -159,28 +167,34 @@ export function Overview() {
               {attention.map((row) => (
                 <li
                   key={row.companyId}
-                  className="flex items-center justify-between gap-3 py-2.5"
+                  className="py-0.5"
                 >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">
-                      {row.name}
-                    </p>
-                    <p className="font-mono text-xs text-muted-foreground">
-                      {row.taxId}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={
-                        row.difference < 0
-                          ? "text-sm font-medium tabular-nums text-danger"
-                          : "text-sm font-medium tabular-nums text-warning"
-                      }
-                    >
-                      {formatSignedCurrency(row.difference)}
-                    </span>
-                    <OutcomeBadge outcome={row.outcome} />
-                  </div>
+                  <PeriodLink
+                    href={reconciliationItemHref(row)}
+                    className="flex items-center justify-between gap-3 rounded-md py-2.5 transition-colors hover:bg-surface-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label={`Open reconciliation row for ${row.name}`}
+                  >
+                    <div className="min-w-0 pl-2">
+                      <p className="truncate text-sm font-medium">
+                        {row.name}
+                      </p>
+                      <p className="font-mono text-xs text-muted-foreground">
+                        {row.taxId}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 pr-2">
+                      <span
+                        className={
+                          row.difference < 0
+                            ? "text-sm font-medium tabular-nums text-danger"
+                            : "text-sm font-medium tabular-nums text-warning"
+                        }
+                      >
+                        {formatSignedCurrency(row.difference)}
+                      </span>
+                      <OutcomeBadge outcome={row.outcome} />
+                    </div>
+                  </PeriodLink>
                 </li>
               ))}
             </ul>
