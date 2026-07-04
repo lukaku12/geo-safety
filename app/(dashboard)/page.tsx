@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 
 import { Overview } from "@/components/dashboard/overview";
-import { PageSkeleton } from "@/components/dashboard/page-skeleton";
+import { OverviewSkeleton } from "@/components/dashboard/page-skeleton";
 
 // Static instant-navigation prefetch; validation is opted out because the draft
 // validator false-flags the `useSearchParams`-suspends-on-load pattern (see the
@@ -15,7 +15,7 @@ export const metadata = { title: "Overview" };
 
 export default function OverviewPage() {
   return (
-    <Suspense fallback={<PageSkeleton />}>
+    <Suspense fallback={<OverviewSkeleton />}>
       <Overview />
     </Suspense>
   );

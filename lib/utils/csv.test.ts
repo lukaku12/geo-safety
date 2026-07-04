@@ -23,11 +23,19 @@ describe("toCsv", () => {
   it("guards text cells against spreadsheet formula injection", () => {
     expect(toCsv(["v"], [["=SUM(A1:A9)"]])).toBe("v\n'=SUM(A1:A9)");
     expect(toCsv(["v"], [["@import"]])).toBe("v\n'@import");
-    expect(toCsv(["v"], [["+123"]])).toBe("v\n'+123");
     expect(toCsv(["v"], [["-fake"]])).toBe("v\n'-fake");
+    expect(toCsv(["v"], [["-2+cmd|' /C calc'!A0"]])).toBe(
+      "v\n'-2+cmd|' /C calc'!A0",
+    );
   });
 
-  it("leaves numbers numeric — negative amounts are not escaped", () => {
+  it("leaves plain numbers numeric even though +/- are formula triggers", () => {
+    // exportCsv (company-reconciliation-table.tsx) formats amounts with
+    // `.toFixed()` before handing them to toCsv, so a negative amount arrives
+    // as the *string* "-1500.00", not a JS number — this must stay a real
+    // number in the export, not text with a stray leading apostrophe.
+    expect(toCsv(["amount"], [["-1500.00"]])).toBe("amount\n-1500.00");
+    expect(toCsv(["amount"], [["+123"]])).toBe("amount\n+123");
     expect(toCsv(["amount"], [[-500.25]])).toBe("amount\n-500.25");
     expect(toCsv(["amount"], [[1200]])).toBe("amount\n1200");
   });

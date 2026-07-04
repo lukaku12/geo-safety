@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/ui/states";
 import { PaginationBar, SortHeader } from "@/components/dashboard/table-controls";
+import { PaginationBarSkeleton } from "@/components/dashboard/page-skeleton";
 import { OutcomeBadge } from "@/components/dashboard/status-badges";
 import { useCompanyReconciliation } from "@/hooks/use-dashboard-queries";
 import type { useReconciliationTableParams } from "@/hooks/use-table-params";
@@ -67,8 +68,8 @@ export function CompanyReconciliationTable({
   }, [data, rows]);
 
   return (
-    <section className="flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-3">
+    <section className="flex min-h-0 flex-1 flex-col gap-3">
+      <div className="flex shrink-0 items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold">Expected vs. actual</h2>
           <p className="text-sm text-muted-foreground">
@@ -113,16 +114,19 @@ export function CompanyReconciliationTable({
           description="Try clearing the search or changing the outcome filter."
         />
       ) : (
-        <Card className="overflow-hidden">
+        <Card className="flex min-h-40 flex-1 flex-col overflow-hidden">
           <div
             className={cn(
-              "overflow-x-auto",
+              "min-h-0 flex-1 overflow-auto",
               isPlaceholderData && "opacity-60 transition-opacity",
             )}
           >
-            <table className="w-full text-sm">
+            {/* Header cells stick to the top and the totals row to the bottom
+                of the scroll region; rules are inset shadows because collapsed
+                table borders don't travel with sticky cells. */}
+            <table className="w-full text-sm [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:bg-card [&_th]:shadow-[inset_0_-1px_0_var(--border)] [&_tfoot_td]:sticky [&_tfoot_td]:bottom-0 [&_tfoot_td]:bg-card [&_tfoot_td]:shadow-[inset_0_1px_0_var(--border)]">
               <thead>
-                <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
+                <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
                   <SortHeader
                     label="Company"
                     field="name"
@@ -172,10 +176,29 @@ export function CompanyReconciliationTable({
               </thead>
               <tbody>
                 {isPending
-                  ? Array.from({ length: 8 }).map((_, i) => (
+                  ? // Placeholder cells share the real columns' alignment so
+                    // the header, numbers, and badges land exactly in place.
+                    Array.from({ length: 12 }).map((_, i) => (
                       <tr key={i} className="border-b border-border last:border-0">
-                        <td className="px-4 py-3" colSpan={6}>
-                          <Skeleton className="h-5 w-full" />
+                        <td className="px-4 py-3.5">
+                          <Skeleton
+                            className={cn("h-4", i % 2 === 0 ? "w-40" : "w-48")}
+                          />
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <Skeleton className="h-4 w-24" />
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <Skeleton className="ml-auto h-4 w-20" />
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <Skeleton className="ml-auto h-4 w-20" />
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <Skeleton className="ml-auto h-4 w-20" />
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <Skeleton className="h-5 w-24 rounded-full" />
                         </td>
                       </tr>
                     ))
@@ -210,7 +233,7 @@ export function CompanyReconciliationTable({
               </tbody>
               {totals ? (
                 <tfoot>
-                  <tr className="border-t border-border bg-surface-muted/40 font-semibold">
+                  <tr className="font-semibold">
                     <td className="px-4 py-3" colSpan={2}>
                       Total
                     </td>
@@ -247,6 +270,11 @@ export function CompanyReconciliationTable({
           onPageChange={(page) => patch({ page })}
           onPageSizeChange={(pageSize) => patch({ pageSize })}
         />
+      ) : enabled && isPending ? (
+        // Reserve the pagination row so the table card doesn't jump when data
+        // lands. (A disabled query — no month picked — also reports pending,
+        // hence the `enabled` gate.)
+        <PaginationBarSkeleton />
       ) : null}
     </section>
   );

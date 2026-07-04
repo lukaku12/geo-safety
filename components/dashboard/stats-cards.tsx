@@ -1,8 +1,8 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/states";
+import { StatsGridSkeleton } from "@/components/dashboard/page-skeleton";
 import { useStats } from "@/hooks/use-dashboard-queries";
 import { cn } from "@/lib/utils/cn";
 import type { ReconciliationStats } from "@/lib/types/domain";
@@ -84,21 +84,7 @@ export function StatsCards({ period }: { period: PeriodKey }) {
   }
 
   if (isPending) {
-    return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader>
-              <Skeleton className="h-4 w-24" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-7 w-16" />
-              <Skeleton className="mt-2 h-3 w-32" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
+    return <StatsGridSkeleton />;
   }
 
   return (

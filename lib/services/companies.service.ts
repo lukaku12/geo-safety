@@ -25,26 +25,55 @@ export async function listCompanies(
   const supabase = getSupabaseServerClient();
   const { q, sort, order, page, pageSize } = query;
 
-  let builder = supabase
-    .from("companies")
-    .select("id, name, tax_id", { count: "exact" });
-
-  if (q) {
-    const term = sanitizeSearch(q);
-    if (term) {
-      builder = builder.or(`name.ilike.%${term}%,tax_id.ilike.%${term}%`);
+  // Shared by the main query and the out-of-range fallback below, so the
+  // filters can never drift between the two.
+  function filtered<Q extends string>(
+    select: Q,
+    opts?: { count: "exact"; head?: boolean },
+  ) {
+    let builder = supabase.from("companies").select(select, opts);
+    if (q) {
+      const term = sanitizeSearch(q);
+      if (term) builder = builder.or(`name.ilike.%${term}%,tax_id.ilike.%${term}%`);
     }
+    return builder;
   }
 
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  const { data, error, count } = await builder
+  const { data, error, count } = await filtered("id, name, tax_id", {
+    count: "exact",
+  })
     .order(sort, { ascending: order === "asc" })
     .order("id", { ascending: true })
     .range(from, to);
 
-  if (error) throw new ServiceError(`Failed to list companies: ${error.message}`);
+  if (error) {
+    // PostgREST 416s ("Requested range not satisfiable") when `from` is past
+    // the last row for the filtered set — reachable via a stale/bookmarked
+    // page. Recover with the true count instead of a raw 500; the pagination
+    // bar clamps and self-corrects on the next click.
+    if (error.code === "PGRST103") {
+      const { count: total, error: countError } = await filtered("id", {
+        count: "exact",
+        head: true,
+      });
+      if (countError) {
+        throw new ServiceError(
+          `Failed to list companies: ${countError.message}`,
+        );
+      }
+      return {
+        items: [],
+        page,
+        pageSize,
+        total: total ?? 0,
+        totalPages: Math.max(1, Math.ceil((total ?? 0) / pageSize)),
+      };
+    }
+    throw new ServiceError(`Failed to list companies: ${error.message}`);
+  }
 
   const total = count ?? 0;
   return {

@@ -40,9 +40,11 @@ export function ReconciliationView() {
   }, [term, query.q, patch]);
 
   return (
-    <div className="flex flex-col gap-4">
+    // h-full + min-h-0 down the chain: the page fits the viewport exactly and
+    // only the table region scrolls (both axes) — never the document.
+    <div className="flex h-full min-h-0 flex-col gap-4">
       {isMonthPeriod(query.period) ? (
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex shrink-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div
             role="tablist"
             aria-label="Filter by outcome"

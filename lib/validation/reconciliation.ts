@@ -16,14 +16,24 @@ export const statsQuerySchema = z.object({
 export type StatsQuery = z.infer<typeof statsQuerySchema>;
 
 /**
- * The per-company expected-vs-actual view is always scoped to one concrete
+ * The per-company expected-vs-actual view only has data for one concrete
  * month — "expected" is a monthly figure, so an "all" aggregate would be
- * meaningless without dividing by the number of months.
+ * meaningless without dividing by the number of months. But `period` is a
+ * *global* URL param shared with every other page (see `usePeriod`), and
+ * `PeriodLink` forwards whatever value is currently selected — including
+ * "all" — onto this page too. So the schema must accept the same shape as
+ * every other period field ("all" or "YYYY-MM"); it's on the caller
+ * (`useReconciliationTableParams`'s `isMonthPeriod` gate, the "pick a month"
+ * empty state, and the service layer's 400) to require a concrete month
+ * before actually fetching data. Rejecting "all" here instead throws before
+ * any of that UI ever runs.
  */
 export const companyReconciliationQuerySchema = z.object({
   period: z
     .string()
-    .regex(/^\d{4}-\d{2}$/, "period must be 'YYYY-MM'"),
+    .refine((v) => v === ALL_PERIODS || /^\d{4}-\d{2}$/.test(v), {
+      message: "period must be 'all' or 'YYYY-MM'",
+    }),
   outcome: z.enum(reconciliationOutcomes).optional(),
   q: z
     .string()

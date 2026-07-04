@@ -3,15 +3,19 @@
 import { useState } from "react";
 
 import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/ui/states";
 import { TransactionFilters } from "@/components/dashboard/transaction-filters";
 import { TransactionsTable } from "@/components/dashboard/transactions-table";
 import { ManualMatchDialog } from "@/components/dashboard/manual-match-dialog";
 import { PaginationBar } from "@/components/dashboard/table-controls";
+import {
+  PaginationBarSkeleton,
+  TableSkeleton,
+} from "@/components/dashboard/page-skeleton";
 import { useTransactions } from "@/hooks/use-dashboard-queries";
 import type { UseDashboardParams } from "@/hooks/use-dashboard-params";
 import type { Transaction } from "@/lib/types/domain";
+import { cn } from "@/lib/utils/cn";
 
 export function TransactionsPanel({
   query,
@@ -27,8 +31,10 @@ export function TransactionsPanel({
   const [selected, setSelected] = useState<Transaction | null>(null);
 
   return (
-    <section className="flex flex-col gap-4">
-      <div>
+    // h-full + min-h-0 down the chain: the page fits the viewport exactly and
+    // only the table region scrolls (both axes) — never the document.
+    <section className="flex h-full min-h-0 flex-col gap-4">
+      <div className="shrink-0">
         <h2 className="text-lg font-semibold">Transactions</h2>
         <p className="text-sm text-muted-foreground">
           Review incoming transfers and reconcile them with companies.
@@ -37,7 +43,9 @@ export function TransactionsPanel({
 
       <TransactionFilters query={query} patch={patch} />
 
-      <Card className="overflow-hidden">
+      {/* min-h-40 floor: on absurdly short viewports the page degrades to
+          scrolling inside <main> instead of crushing the table to nothing. */}
+      <Card className="flex min-h-40 flex-1 flex-col overflow-hidden">
         {isError ? (
           <ErrorState
             className="border-0"
@@ -53,11 +61,7 @@ export function TransactionsPanel({
             }
           />
         ) : isPending ? (
-          <div className="space-y-3 p-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
+          <TableSkeleton />
         ) : data.items.length === 0 ? (
           <EmptyState
             className="border-0"
@@ -66,9 +70,10 @@ export function TransactionsPanel({
           />
         ) : (
           <div
-            className={
-              isPlaceholderData ? "opacity-60 transition-opacity" : undefined
-            }
+            className={cn(
+              "min-h-0 flex-1 overflow-auto",
+              isPlaceholderData && "opacity-60 transition-opacity",
+            )}
           >
             <TransactionsTable
               transactions={data.items}
@@ -91,6 +96,10 @@ export function TransactionsPanel({
           onPageChange={(page) => patch({ page })}
           onPageSizeChange={(pageSize) => patch({ pageSize })}
         />
+      ) : isPending ? (
+        // Reserve the pagination row so the table card doesn't jump when data
+        // lands.
+        <PaginationBarSkeleton />
       ) : null}
 
       {selected ? (

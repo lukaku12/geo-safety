@@ -48,6 +48,9 @@ function toTransaction(row: TransactionRow): Transaction {
   };
 }
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * PostgREST `or()` is comma/paren-delimited — strip those. `ilike` treats
  * `%`, `_` and `\` as pattern syntax — escape them so input matches literally
@@ -65,24 +68,27 @@ export async function listTransactions(
 ): Promise<Paginated<Transaction>> {
   const supabase = getSupabaseServerClient();
   const { status, q, period, sort, order, page, pageSize } = query;
-
-  let builder = supabase
-    .from("bank_transactions")
-    .select(SELECT, { count: "exact" });
-
-  if (status) builder = builder.eq("status", status);
-
   const { start, end } = getPeriodRange(period);
-  if (start) builder = builder.gte("entry_date", start);
-  if (end) builder = builder.lte("entry_date", end);
 
-  if (q) {
-    const term = sanitizeSearch(q);
-    if (term) {
-      builder = builder.or(
-        `sender_name.ilike.%${term}%,sender_inn.ilike.%${term}%,purpose.ilike.%${term}%`,
-      );
+  // Shared by the main query and the out-of-range fallback below, so the
+  // filters can never drift between the two.
+  function filtered<Q extends string>(
+    select: Q,
+    opts?: { count: "exact"; head?: boolean },
+  ) {
+    let builder = supabase.from("bank_transactions").select(select, opts);
+    if (status) builder = builder.eq("status", status);
+    if (start) builder = builder.gte("entry_date", start);
+    if (end) builder = builder.lte("entry_date", end);
+    if (q) {
+      const term = sanitizeSearch(q);
+      if (term) {
+        builder = builder.or(
+          `sender_name.ilike.%${term}%,sender_inn.ilike.%${term}%,purpose.ilike.%${term}%`,
+        );
+      }
     }
+    return builder;
   }
 
   const from = (page - 1) * pageSize;
@@ -90,12 +96,38 @@ export async function listTransactions(
 
   // Secondary sort by id keeps pagination deterministic when the primary key
   // (e.g. amount or date) has ties.
-  const { data, error, count } = await builder
+  const { data, error, count } = await filtered(SELECT, { count: "exact" })
     .order(sort, { ascending: order === "asc", nullsFirst: false })
     .order("id", { ascending: true })
     .range(from, to);
 
-  if (error) throw new ServiceError(`Failed to list transactions: ${error.message}`);
+  if (error) {
+    // PostgREST 416s ("Requested range not satisfiable") when `from` is past
+    // the last row for the filtered set — reachable via a stale/bookmarked
+    // page, or a mutation (auto-match, ignore) that shrinks the result set
+    // out from under the page the user is sitting on. Recover with the true
+    // count instead of a raw 500; the pagination bar clamps and self-corrects
+    // on the next click.
+    if (error.code === "PGRST103") {
+      const { count: total, error: countError } = await filtered("id", {
+        count: "exact",
+        head: true,
+      });
+      if (countError) {
+        throw new ServiceError(
+          `Failed to list transactions: ${countError.message}`,
+        );
+      }
+      return {
+        items: [],
+        page,
+        pageSize,
+        total: total ?? 0,
+        totalPages: Math.max(1, Math.ceil((total ?? 0) / pageSize)),
+      };
+    }
+    throw new ServiceError(`Failed to list transactions: ${error.message}`);
+  }
 
   const total = count ?? 0;
   return {
@@ -111,6 +143,10 @@ export async function updateTransaction(
   id: string,
   input: UpdateTransactionInput,
 ): Promise<Transaction> {
+  // Reject malformed ids up front so a bad id is a clean 404, not a DB 500
+  // (Postgres throws a raw type-cast error for a non-UUID in a uuid column).
+  if (!UUID_RE.test(id)) throw new NotFoundError("Transaction not found");
+
   const supabase = getSupabaseServerClient();
 
   // Each action maps to an explicit column set so we never leave a row in a

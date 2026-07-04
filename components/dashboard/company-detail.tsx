@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/ui/states";
 import { OutcomeBadge } from "@/components/dashboard/status-badges";
+import { TableSkeleton } from "@/components/dashboard/page-skeleton";
 import {
   useCompanyDetail,
   useCompanyReconciliation,
@@ -98,15 +99,20 @@ export function CompanyDetail() {
 
       <div className="flex flex-col gap-1">
         {detail.isPending ? (
-          <Skeleton className="h-8 w-64" />
+          <>
+            <Skeleton className="h-8 w-64 max-w-full" />
+            <Skeleton className="h-5 w-36" />
+          </>
         ) : (
-          <h2 className="text-2xl font-semibold tracking-tight">
-            {detail.data.name}
-          </h2>
+          <>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              {detail.data.name}
+            </h2>
+            <p className="font-mono text-sm text-muted-foreground">
+              Tax ID {detail.data.taxId}
+            </p>
+          </>
         )}
-        <p className="font-mono text-sm text-muted-foreground">
-          {detail.isPending ? "" : `Tax ID ${detail.data.taxId}`}
-        </p>
       </div>
 
       {/* This-month reconciliation summary */}
@@ -148,12 +154,8 @@ export function CompanyDetail() {
       <section className="flex flex-col gap-3">
         <h3 className="text-lg font-semibold">Contracts</h3>
         {detail.isPending ? (
-          <Card className="p-4">
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
+          <Card className="overflow-hidden">
+            <TableSkeleton rows={3} />
           </Card>
         ) : detail.data.contracts.length === 0 ? (
           <EmptyState

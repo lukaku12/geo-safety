@@ -42,7 +42,7 @@ export function TransactionFilters({
   const activeStatus = query.status ?? "all";
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div
         role="tablist"
         aria-label="Filter by status"

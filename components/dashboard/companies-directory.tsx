@@ -5,8 +5,11 @@ import { ChevronRight, Search } from "lucide-react";
 
 import { PeriodLink } from "@/components/layout/period-link";
 import { PaginationBar, SortHeader } from "@/components/dashboard/table-controls";
+import {
+  PaginationBarSkeleton,
+  TableSkeleton,
+} from "@/components/dashboard/page-skeleton";
 import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/ui/states";
 import { OutcomeBadge } from "@/components/dashboard/status-badges";
 import {
@@ -55,8 +58,10 @@ export function CompaniesDirectory() {
   }, [reconciliation.data]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="relative sm:w-80">
+    // h-full + min-h-0 down the chain: the page fits the viewport exactly and
+    // only the table region scrolls (both axes) — never the document.
+    <div className="flex h-full min-h-0 flex-col gap-4">
+      <div className="relative shrink-0 sm:w-80">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
           type="search"
@@ -82,12 +87,8 @@ export function CompaniesDirectory() {
           }
         />
       ) : companies.isPending ? (
-        <Card className="p-4">
-          <div className="space-y-3">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
-          </div>
+        <Card className="flex min-h-40 flex-1 flex-col overflow-hidden">
+          <TableSkeleton />
         </Card>
       ) : companies.data.items.length === 0 ? (
         <EmptyState
@@ -95,11 +96,11 @@ export function CompaniesDirectory() {
           description="Try a different name or tax ID."
         />
       ) : (
-        <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+        <Card className="flex min-h-40 flex-1 flex-col overflow-hidden">
+          <div className="min-h-0 flex-1 overflow-auto">
+            <table className="w-full text-sm [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:bg-card [&_th]:shadow-[inset_0_-1px_0_var(--border)]">
               <thead>
-                <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
+                <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
                   <SortHeader<CompanyQuery["sort"]>
                     label="Company"
                     field="name"
@@ -182,6 +183,10 @@ export function CompaniesDirectory() {
           onPageChange={(page) => patch({ page })}
           onPageSizeChange={(pageSize) => patch({ pageSize })}
         />
+      ) : companies.isPending ? (
+        // Reserve the pagination row so the table card doesn't jump when data
+        // lands.
+        <PaginationBarSkeleton />
       ) : null}
     </div>
   );

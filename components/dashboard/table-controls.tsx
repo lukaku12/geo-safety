@@ -144,7 +144,7 @@ export function PaginationBar({
   };
 
   return (
-    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex shrink-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <p className="text-sm text-muted-foreground">
         {from}-{to} of {total} {itemLabel}
         {total === 1 ? "" : "s"}
