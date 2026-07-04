@@ -26,6 +26,22 @@ function differenceClass(difference: number): string {
   return difference < 0 ? "text-danger" : "text-warning";
 }
 
+/**
+ * Rows needing operator action get a soft tint plus a left accent bar, not
+ * just their badge — the soft tokens alone are too faint in light mode. The
+ * accent is an inset shadow on the first cell because row borders don't
+ * survive collapsed sticky tables.
+ */
+function rowClass(row: CompanyReconciliation): string {
+  if (row.outcome === "underpaid") {
+    return "bg-danger-soft/60 hover:bg-danger-soft [&>td:first-child]:shadow-[inset_3px_0_0_var(--danger)]";
+  }
+  if (row.outcome === "unpaid") {
+    return "bg-warning-soft/60 hover:bg-warning-soft [&>td:first-child]:shadow-[inset_3px_0_0_var(--warning)]";
+  }
+  return "hover:bg-surface-muted/60";
+}
+
 function exportCsv(rows: CompanyReconciliation[], period: PeriodKey) {
   const csv = toCsv(
     ["Company", "Tax ID", "Expected", "Actual", "Difference", "Status"],
@@ -205,7 +221,10 @@ export function CompanyReconciliationTable({
                   : rows.map((row) => (
                       <tr
                         key={row.companyId}
-                        className="border-b border-border last:border-0 hover:bg-surface-muted/60"
+                        className={cn(
+                          "border-b border-border transition-colors duration-150 last:border-0",
+                          rowClass(row),
+                        )}
                       >
                         <td className="px-4 py-3 font-medium">{row.name}</td>
                         <td className="px-4 py-3 font-mono text-xs text-muted-foreground">

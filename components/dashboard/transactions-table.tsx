@@ -3,6 +3,7 @@
 import { TransactionStatusBadge } from "@/components/dashboard/status-badges";
 import { SortHeader } from "@/components/dashboard/table-controls";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils/cn";
 import type { Transaction } from "@/lib/types/domain";
 import type { UseDashboardParams } from "@/hooks/use-dashboard-params";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
@@ -69,7 +70,14 @@ export function TransactionsTable({
         {transactions.map((txn) => (
           <tr
             key={txn.id}
-            className="border-b border-border last:border-0 hover:bg-surface-muted/60"
+            className={cn(
+              "border-b border-border transition-colors duration-150 last:border-0",
+              // Unmatched rows are the worklist — a soft tint plus a left
+              // accent flags them before the reader parses the badge column.
+              txn.status === "unmatched"
+                ? "bg-danger-soft/60 hover:bg-danger-soft [&>td:first-child]:shadow-[inset_3px_0_0_var(--danger)]"
+                : "hover:bg-surface-muted/60",
+            )}
           >
             <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
               {formatDate(txn.entryDate)}

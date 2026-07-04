@@ -130,7 +130,7 @@ export function CompaniesDirectory() {
                   return (
                     <tr
                       key={company.id}
-                      className="border-b border-border last:border-0 hover:bg-surface-muted/60"
+                      className="border-b border-border transition-colors duration-150 last:border-0 hover:bg-surface-muted/60"
                     >
                       <td className="px-4 py-3 font-medium">
                         <PeriodLink

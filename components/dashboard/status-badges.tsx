@@ -20,7 +20,11 @@ export function TransactionStatusBadge({
   status: TransactionStatus;
 }) {
   const { tone, label } = TXN_STATUS[status];
-  return <Badge tone={tone}>{label}</Badge>;
+  return (
+    <Badge tone={tone} dot>
+      {label}
+    </Badge>
+  );
 }
 
 // Brief's color rule: green when paid >= expected (incl. overpaid), red when
@@ -35,6 +39,8 @@ const OUTCOME_TONE: Record<ReconciliationOutcome, BadgeTone> = {
 
 export function OutcomeBadge({ outcome }: { outcome: ReconciliationOutcome }) {
   return (
-    <Badge tone={OUTCOME_TONE[outcome]}>{OUTCOME_LABELS[outcome]}</Badge>
+    <Badge tone={OUTCOME_TONE[outcome]} dot>
+      {OUTCOME_LABELS[outcome]}
+    </Badge>
   );
 }

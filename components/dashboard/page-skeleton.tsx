@@ -104,12 +104,13 @@ export function StatsGridSkeleton() {
     >
       {Array.from({ length: 4 }).map((_, i) => (
         <Card key={i}>
-          <CardHeader>
-            <Skeleton className="h-5 w-24" />
+          <CardHeader className="flex-row items-center justify-between">
+            <Skeleton className="h-3.5 w-28" />
+            <Skeleton className="h-8 w-8" />
           </CardHeader>
           <CardContent>
-            <Skeleton className="h-8 w-20" />
-            <Skeleton className="mt-1 h-4 w-32" />
+            <Skeleton className="h-9 w-20" />
+            <Skeleton className="mt-1.5 h-4 w-32" />
           </CardContent>
         </Card>
       ))}
@@ -137,7 +138,7 @@ export function OverviewSkeleton() {
             <CardTitle>Match breakdown</CardTitle>
           </CardHeader>
           <CardContent>
-            <Skeleton className="h-56 w-full" />
+            <Skeleton className="h-60 w-full" />
           </CardContent>
         </Card>
 

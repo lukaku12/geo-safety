@@ -122,7 +122,7 @@ export function CompanyDetail() {
             <CardTitle>Expected{monthly ? ` — ${formatMonth(period)}` : ""}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold tabular-nums">
+            <p className="text-3xl font-bold tracking-tight">
               {monthly && recon ? formatCurrency(recon.expected) : "—"}
             </p>
           </CardContent>
@@ -132,17 +132,27 @@ export function CompanyDetail() {
             <CardTitle>Actual</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold tabular-nums">
+            <p className="text-3xl font-bold tracking-tight">
               {monthly && recon ? formatCurrency(recon.actual) : "—"}
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card
+          tone={
+            monthly && recon
+              ? recon.outcome === "underpaid"
+                ? "danger"
+                : recon.outcome === "unpaid"
+                  ? "warning"
+                  : "default"
+              : "default"
+          }
+        >
           <CardHeader>
             <CardTitle>Difference</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center gap-2">
-            <p className="text-2xl font-semibold tabular-nums">
+            <p className="text-3xl font-bold tracking-tight">
               {monthly && recon ? formatSignedCurrency(recon.difference) : "—"}
             </p>
             {monthly && recon ? <OutcomeBadge outcome={recon.outcome} /> : null}
@@ -180,7 +190,7 @@ export function CompanyDetail() {
                   {detail.data.contracts.map((contract) => (
                     <tr
                       key={contract.id}
-                      className="border-b border-border last:border-0"
+                      className="border-b border-border transition-colors duration-150 last:border-0 hover:bg-surface-muted/60"
                     >
                       <td className="px-4 py-3">
                         <Badge tone={CONTRACT_TONE[contract.status]}>

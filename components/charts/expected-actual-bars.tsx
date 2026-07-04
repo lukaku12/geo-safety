@@ -14,12 +14,15 @@ import {
 
 import type { CompanyReconciliation } from "@/lib/types/domain";
 
+// Tooltip surface mirrors the card tokens; raised shadow lifts it off the plot.
 const TOOLTIP_STYLE = {
   background: "var(--card)",
   border: "1px solid var(--border)",
-  borderRadius: 8,
+  borderRadius: 10,
+  boxShadow: "var(--elevation-raised)",
   color: "var(--foreground)",
   fontSize: 13,
+  padding: "8px 12px",
 } as const;
 
 /** Truncate long company names so axis labels stay legible. */
@@ -27,7 +30,12 @@ function shortName(name: string): string {
   return name.length > 16 ? `${name.slice(0, 15)}…` : name;
 }
 
-/** Top companies by expected amount: contracted (expected) vs. received (actual). */
+/**
+ * Top companies by expected amount: contracted (expected) vs. received
+ * (actual). Expected is the reference series, so it wears the de-emphasis
+ * gray; Actual carries the primary hue. Green/red stay reserved for status
+ * (badges, donut) — "actual" isn't inherently good.
+ */
 export function ExpectedActualBars({
   rows,
   limit = 6,
@@ -59,8 +67,13 @@ export function ExpectedActualBars({
   return (
     <div className="h-64">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+        <BarChart
+          data={data}
+          barSize={20}
+          barGap={4}
+          margin={{ top: 8, right: 8, bottom: 0, left: 8 }}
+        >
+          <CartesianGrid stroke="var(--border)" vertical={false} />
           <XAxis
             dataKey="name"
             tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
@@ -69,14 +82,29 @@ export function ExpectedActualBars({
           />
           <YAxis
             tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+            tickFormatter={(v: number) => v.toLocaleString()}
             tickLine={false}
             axisLine={false}
-            width={48}
+            width={52}
           />
-          <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: "var(--surface-muted)" }} />
-          <Legend wrapperStyle={{ fontSize: 12 }} />
-          <Bar dataKey="Expected" fill="var(--primary)" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="Actual" fill="var(--success)" radius={[4, 4, 0, 0]} />
+          <Tooltip
+            contentStyle={TOOLTIP_STYLE}
+            cursor={{ fill: "var(--surface-muted)", opacity: 0.6 }}
+          />
+          <Legend
+            verticalAlign="top"
+            align="right"
+            iconType="square"
+            iconSize={10}
+            height={28}
+            wrapperStyle={{ fontSize: 12, color: "var(--muted-foreground)" }}
+          />
+          <Bar
+            dataKey="Expected"
+            fill="var(--muted-foreground)"
+            radius={[4, 4, 0, 0]}
+          />
+          <Bar dataKey="Actual" fill="var(--primary)" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

@@ -193,7 +193,7 @@ export function Select({
         disabled={disabled}
         onClick={() => (open ? closeList() : openList())}
         onKeyDown={onKeyDown}
-        className="flex h-full w-full items-center justify-between gap-2 rounded-md border border-input bg-surface px-3 text-sm text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex h-full w-full items-center justify-between gap-2 rounded-md border border-input bg-surface px-3 text-sm text-foreground transition-colors duration-150 hover:bg-surface-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
       >
         <span className="truncate">{selected?.label ?? placeholder}</span>
         <ChevronDown
@@ -218,8 +218,8 @@ export function Select({
           // longer forces labels to wrap); the max-width cap keeps very long
           // labels wrapping instead of running off small screens.
           className={cn(
-            "absolute left-0 z-50 max-h-60 w-max min-w-full max-w-[min(90vw,28rem)] overflow-y-auto rounded-md border border-border bg-card p-1 shadow-lg",
-            openUp ? "bottom-full mb-1" : "top-full mt-1",
+            "absolute left-0 z-50 max-h-60 w-max min-w-full max-w-[min(90vw,28rem)] overflow-y-auto rounded-md border border-border bg-card p-1 shadow-raised motion-safe:animate-dropdown-in",
+            openUp ? "bottom-full mb-1 origin-bottom" : "top-full mt-1 origin-top",
           )}
         >
           {options.map((option, index) => (
@@ -233,7 +233,7 @@ export function Select({
               onMouseEnter={() => setActiveIndex(index)}
               onClick={() => commit(index)}
               className={cn(
-                "scroll-my-1 cursor-pointer rounded px-2.5 py-1.5 text-sm",
+                "scroll-my-1 cursor-pointer rounded px-2.5 py-1.5 text-sm transition-colors duration-75",
                 index === activeIndex && "bg-primary/10",
                 option.value === value && "font-semibold text-primary",
               )}

@@ -26,7 +26,7 @@ import type { CompanyReconciliation } from "@/lib/types/domain";
 // arrives anyway. The loading fallbacks mirror the data-pending skeletons.
 const StatusDonut = dynamic(
   () => import("@/components/charts/status-donut").then((m) => m.StatusDonut),
-  { ssr: false, loading: () => <Skeleton className="h-56 w-full" /> },
+  { ssr: false, loading: () => <Skeleton className="h-60 w-full" /> },
 );
 const ExpectedActualBars = dynamic(
   () =>
@@ -116,7 +116,7 @@ export function Overview() {
                 action={retryAction(stats.refetch)}
               />
             ) : stats.isPending ? (
-              <Skeleton className="h-56 w-full" />
+              <Skeleton className="h-60 w-full" />
             ) : (
               <StatusDonut stats={stats.data} />
             )}
@@ -158,15 +158,17 @@ export function Overview() {
       </div>
 
       {showAttentionCard ? (
-        <Card>
+        <Card tone="warning">
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-warning" />
+              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-warning/15 text-warning">
+                <AlertTriangle className="h-3.5 w-3.5" />
+              </span>
               Needs attention
             </CardTitle>
             <PeriodLink
               href="/reconciliation"
-              className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+              className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:underline"
             >
               View all <ArrowRight className="h-3.5 w-3.5" />
             </PeriodLink>
@@ -177,7 +179,7 @@ export function Overview() {
                 "opacity-60 transition-opacity",
             )}
           >
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-warning/15">
               {attention.map((row) => (
                 <li
                   key={row.companyId}
@@ -185,11 +187,11 @@ export function Overview() {
                 >
                   <PeriodLink
                     href={reconciliationItemHref(row)}
-                    className="flex items-center justify-between gap-3 rounded-md py-2.5 transition-colors hover:bg-surface-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex items-center justify-between gap-3 rounded-md py-2.5 transition-colors duration-150 hover:bg-warning-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-label={`Open reconciliation row for ${row.name}`}
                   >
                     <div className="min-w-0 pl-2">
-                      <p className="truncate text-sm font-medium">
+                      <p className="truncate text-sm font-semibold">
                         {row.name}
                       </p>
                       <p className="font-mono text-xs text-muted-foreground">
@@ -200,8 +202,8 @@ export function Overview() {
                       <span
                         className={
                           row.difference < 0
-                            ? "text-sm font-medium tabular-nums text-danger"
-                            : "text-sm font-medium tabular-nums text-warning"
+                            ? "text-sm font-semibold tabular-nums text-danger"
+                            : "text-sm font-semibold tabular-nums text-warning"
                         }
                       >
                         {formatSignedCurrency(row.difference)}

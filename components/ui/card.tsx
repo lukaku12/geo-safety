@@ -2,11 +2,29 @@ import type { HTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils/cn";
 
-export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+export type CardTone = "default" | "warning" | "danger";
+
+/**
+ * Routine cards sit at the base elevation; toned cards (a problem the operator
+ * should act on) get a soft tint plus the raised shadow so they outrank their
+ * neighbors instead of relying on a badge alone.
+ */
+const TONES: Record<CardTone, string> = {
+  default: "border-border bg-card shadow-card",
+  warning: "border-warning/25 bg-warning-soft/50 shadow-raised",
+  danger: "border-danger/25 bg-danger-soft/50 shadow-raised",
+};
+
+export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  tone?: CardTone;
+}
+
+export function Card({ className, tone = "default", ...props }: CardProps) {
   return (
     <div
       className={cn(
-        "rounded-lg border border-border bg-card text-card-foreground shadow-sm",
+        "rounded-lg border text-card-foreground",
+        TONES[tone],
         className,
       )}
       {...props}
@@ -32,7 +50,10 @@ export function CardTitle({
 }: HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={cn("text-sm font-medium text-muted-foreground", className)}
+      className={cn(
+        "text-xs font-semibold uppercase tracking-wider text-muted-foreground",
+        className,
+      )}
       {...props}
     />
   );

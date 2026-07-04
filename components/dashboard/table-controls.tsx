@@ -48,7 +48,7 @@ export function SortHeader<TField extends string>({
         type="button"
         onClick={() => onToggle(field)}
         className={cn(
-          "inline-flex items-center gap-1 hover:text-foreground",
+          "inline-flex items-center gap-1 transition-colors duration-150 hover:text-foreground",
           align === "right" && "flex-row-reverse",
           active ? "text-foreground" : "text-muted-foreground",
         )}
