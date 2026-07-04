@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import dynamic from "next/dynamic";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 
 import { PeriodLink } from "@/components/layout/period-link";
@@ -11,8 +12,6 @@ import { EmptyState, ErrorState } from "@/components/ui/states";
 import { cn } from "@/lib/utils/cn";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { OutcomeBadge } from "@/components/dashboard/status-badges";
-import { StatusDonut } from "@/components/charts/status-donut";
-import { ExpectedActualBars } from "@/components/charts/expected-actual-bars";
 import {
   useCompanyReconciliation,
   useStats,
@@ -21,6 +20,21 @@ import { usePeriod } from "@/hooks/use-period";
 import { isMonthPeriod } from "@/lib/utils/periods";
 import { formatMonth, formatSignedCurrency } from "@/lib/utils/format";
 import type { CompanyReconciliation } from "@/lib/types/domain";
+
+// Charts are split out of the route's first-load bundle — recharts is by far
+// the heaviest client dependency, and the charts only render once query data
+// arrives anyway. The loading fallbacks mirror the data-pending skeletons.
+const StatusDonut = dynamic(
+  () => import("@/components/charts/status-donut").then((m) => m.StatusDonut),
+  { ssr: false, loading: () => <Skeleton className="h-56 w-full" /> },
+);
+const ExpectedActualBars = dynamic(
+  () =>
+    import("@/components/charts/expected-actual-bars").then(
+      (m) => m.ExpectedActualBars,
+    ),
+  { ssr: false, loading: () => <Skeleton className="h-64 w-full" /> },
+);
 
 function retryAction(refetch: () => void) {
   return (

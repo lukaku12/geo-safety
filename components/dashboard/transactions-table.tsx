@@ -41,7 +41,7 @@ export function TransactionsTable({
               order={order}
               onToggle={onToggleSort}
             />
-            <th className="px-4 py-3 font-medium">Purpose</th>
+            <th scope="col" className="px-4 py-3 font-medium">Purpose</th>
             <SortHeader
               label="Amount"
               field="amount"
@@ -57,8 +57,8 @@ export function TransactionsTable({
               order={order}
               onToggle={onToggleSort}
             />
-            <th className="px-4 py-3 font-medium">Matched company</th>
-            <th className="px-4 py-3 text-right font-medium">
+            <th scope="col" className="px-4 py-3 font-medium">Matched company</th>
+            <th scope="col" className="px-4 py-3 text-right font-medium">
               <span className="sr-only">Actions</span>
             </th>
           </tr>

@@ -114,13 +114,13 @@ export function CompaniesDirectory() {
                     order={query.order}
                     onToggle={toggleSort}
                   />
-                  <th className="px-4 py-3 text-right font-medium">
+                  <th scope="col" className="px-4 py-3 text-right font-medium">
                     Active contracts
                   </th>
-                  <th className="px-4 py-3 font-medium">
+                  <th scope="col" className="px-4 py-3 font-medium">
                     {monthly ? "This month" : "Status"}
                   </th>
-                  <th className="px-4 py-3" />
+                  <th scope="col" className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody>

@@ -148,6 +148,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Lock background scroll while a modal <dialog> is open. */
+body:has(dialog:modal) {
+  overflow: hidden;
+}
+
 /* Tabular numbers keep currency columns visually aligned. */
 .tabular-nums {
   font-variant-numeric: tabular-nums;

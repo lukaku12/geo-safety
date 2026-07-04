@@ -35,6 +35,10 @@ export function SortHeader<TField extends string>({
 
   return (
     <th
+      scope="col"
+      aria-sort={
+        active ? (order === "asc" ? "ascending" : "descending") : undefined
+      }
       className={cn(
         "px-4 py-3 font-medium",
         align === "right" ? "text-right" : "text-left",
@@ -149,16 +153,14 @@ export function PaginationBar({
       <div className="flex flex-wrap items-center gap-2">
         <Select
           aria-label="Rows per page"
-          value={pageSize}
-          onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          className="h-8 w-28"
-        >
-          {[10, 25, 50, 100].map((value) => (
-            <option key={value} value={value}>
-              {value} / page
-            </option>
-          ))}
-        </Select>
+          value={String(pageSize)}
+          onValueChange={(v) => onPageSizeChange(Number(v))}
+          className="h-8 w-32"
+          options={[10, 25, 50, 100].map((value) => ({
+            value: String(value),
+            label: `${value} / page`,
+          }))}
+        />
 
         <Button
           variant="secondary"

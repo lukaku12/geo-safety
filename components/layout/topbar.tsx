@@ -55,17 +55,15 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
       </h1>
 
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
+        {/* A view filter, not an action — stays open so the user can flip
+            through months and compare; Escape/outside-click dismiss it. */}
         <Select
           aria-label="Billing period"
           value={period}
-          onChange={(e) => setPeriod(e.target.value)}
-        >
-          {options.map((o) => (
-            <option key={o.key} value={o.key}>
-              {o.label}
-            </option>
-          ))}
-        </Select>
+          onValueChange={setPeriod}
+          closeOnSelect={false}
+          options={options.map((o) => ({ value: o.key, label: o.label }))}
+        />
 
         <Button
           variant={confirming ? "danger" : "secondary"}

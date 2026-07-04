@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Sparkles, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ export function ManualMatchDialog({
   transaction: Transaction;
   onClose: () => void;
 }) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const { data: companies, isPending: companiesLoading } = useCompanyOptions();
   const update = useUpdateTransaction();
 
@@ -44,150 +45,153 @@ export function ManualMatchDialog({
     selectedId === suggestion.company.id &&
     transaction.matchedCompany?.id !== selectedId;
 
+  // `showModal()` gives us the focus trap, Escape handling, inert background,
+  // and focus restore to the opener for free. The `open` guard keeps React
+  // StrictMode's double effect run from calling it on an already-open dialog.
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) dialog.showModal();
+  }, []);
+
+  /** Close via the element so the native `close` event (→ onClose) fires. */
+  const requestClose = () => dialogRef.current?.close();
 
   const apply = (input: UpdateTransactionInput) => {
     update.mutate(
       { id: transaction.id, input },
-      { onSuccess: onClose },
+      { onSuccess: requestClose },
     );
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
+      onClose={onClose}
+      // Clicks on ::backdrop retarget to the dialog element itself; clicks on
+      // the content land on its children — so this only fires for the backdrop.
+      onClick={(e) => {
+        if (e.target === e.currentTarget) requestClose();
+      }}
       aria-label="Match transaction"
-      onClick={onClose}
+      className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-lg border border-border bg-card text-foreground shadow-xl backdrop:bg-black/50 max-sm:mb-4"
     >
-      <div
-        className="w-full max-w-lg rounded-lg border border-border bg-card shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start justify-between border-b border-border p-5">
-          <div>
-            <h2 className="text-base font-semibold">Reconcile transaction</h2>
-            <p className="mt-0.5 font-mono text-xs text-muted-foreground">
-              {transaction.docKey}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="rounded-md p-1 text-muted-foreground hover:bg-surface-muted"
-          >
-            <X className="h-4 w-4" />
-          </button>
+      <div className="flex items-start justify-between border-b border-border p-5">
+        <div>
+          <h2 className="text-base font-semibold">Reconcile transaction</h2>
+          <p className="mt-0.5 font-mono text-xs text-muted-foreground">
+            {transaction.docKey}
+          </p>
         </div>
+        <button
+          type="button"
+          onClick={requestClose}
+          aria-label="Close"
+          className="rounded-md p-1 text-muted-foreground hover:bg-surface-muted"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
 
-        <div className="space-y-4 p-5">
-          <dl className="grid grid-cols-2 gap-3 text-sm">
-            <div className="col-span-2">
-              <dt className="text-xs text-muted-foreground">Sender</dt>
-              <dd className="font-medium">
-                {transaction.senderName ?? "—"}{" "}
-                <span className="font-mono text-xs text-muted-foreground">
-                  {transaction.senderInn ?? "no INN"}
-                </span>
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs text-muted-foreground">Amount</dt>
-              <dd className="font-medium tabular-nums">
-                {formatCurrency(transaction.amount, transaction.currency)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs text-muted-foreground">Date</dt>
-              <dd className="font-medium">{formatDate(transaction.entryDate)}</dd>
-            </div>
-            <div className="col-span-2">
-              <dt className="text-xs text-muted-foreground">Purpose</dt>
-              <dd className="text-sm">{transaction.purpose ?? "—"}</dd>
-            </div>
-            <div className="col-span-2">
-              <dt className="text-xs text-muted-foreground">Current status</dt>
-              <dd className="mt-1">
-                <TransactionStatusBadge status={transaction.status} />
-              </dd>
-            </div>
-          </dl>
-
-          <div className="space-y-1.5">
-            <label htmlFor="company" className="text-sm font-medium">
-              Assign to company
-            </label>
-            <Select
-              id="company"
-              className="w-full"
-              value={selectedId}
-              disabled={companiesLoading}
-              onChange={(e) => setCompanyId(e.target.value)}
-            >
-              <option value="">Select a company…</option>
-              {companies?.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} ({c.taxId})
-                </option>
-              ))}
-            </Select>
-            {showSuggestionHint ? (
-              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Sparkles className="h-3.5 w-3.5 shrink-0 text-primary" />
-                Suggested match — {SUGGESTION_REASONS[suggestion.reason]}.
-              </p>
-            ) : null}
+      <div className="space-y-4 p-5">
+        <dl className="grid grid-cols-2 gap-3 text-sm">
+          <div className="col-span-2">
+            <dt className="text-xs text-muted-foreground">Sender</dt>
+            <dd className="font-medium">
+              {transaction.senderName ?? "—"}{" "}
+              <span className="font-mono text-xs text-muted-foreground">
+                {transaction.senderInn ?? "no INN"}
+              </span>
+            </dd>
           </div>
+          <div>
+            <dt className="text-xs text-muted-foreground">Amount</dt>
+            <dd className="font-medium tabular-nums">
+              {formatCurrency(transaction.amount, transaction.currency)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted-foreground">Date</dt>
+            <dd className="font-medium">{formatDate(transaction.entryDate)}</dd>
+          </div>
+          <div className="col-span-2">
+            <dt className="text-xs text-muted-foreground">Purpose</dt>
+            <dd className="text-sm">{transaction.purpose ?? "—"}</dd>
+          </div>
+          <div className="col-span-2">
+            <dt className="text-xs text-muted-foreground">Current status</dt>
+            <dd className="mt-1">
+              <TransactionStatusBadge status={transaction.status} />
+            </dd>
+          </div>
+        </dl>
 
-          {update.isError ? (
-            <p className="text-sm text-danger">
-              {update.error instanceof Error
-                ? update.error.message
-                : "Update failed"}
+        <div className="space-y-1.5">
+          <label htmlFor="company" className="text-sm font-medium">
+            Assign to company
+          </label>
+          <Select
+            id="company"
+            className="w-full"
+            value={selectedId}
+            disabled={companiesLoading}
+            onValueChange={setCompanyId}
+            placeholder="Select a company…"
+            options={[
+              { value: "", label: "Select a company…" },
+              ...(companies?.map((c) => ({
+                value: c.id,
+                label: `${c.name} (${c.taxId})`,
+              })) ?? []),
+            ]}
+          />
+          {showSuggestionHint ? (
+            <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Sparkles className="h-3.5 w-3.5 shrink-0 text-primary" />
+              Suggested match — {SUGGESTION_REASONS[suggestion.reason]}.
             </p>
           ) : null}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border p-5">
-          <div className="flex gap-2">
-            {transaction.status !== "ignored" ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={update.isPending}
-                onClick={() => apply({ action: "ignore" })}
-              >
-                Ignore
-              </Button>
-            ) : null}
-            {transaction.status !== "unmatched" ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={update.isPending}
-                onClick={() => apply({ action: "unmatch" })}
-              >
-                Reset
-              </Button>
-            ) : null}
-          </div>
-          <Button
-            size="sm"
-            disabled={!selectedId || update.isPending}
-            onClick={() => apply({ action: "match", companyId: selectedId })}
-          >
-            {update.isPending ? "Saving…" : "Match company"}
-          </Button>
-        </div>
+        {update.isError ? (
+          <p className="text-sm text-danger">
+            {update.error instanceof Error
+              ? update.error.message
+              : "Update failed"}
+          </p>
+        ) : null}
       </div>
-    </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border p-5">
+        <div className="flex gap-2">
+          {transaction.status !== "ignored" ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={update.isPending}
+              onClick={() => apply({ action: "ignore" })}
+            >
+              Ignore
+            </Button>
+          ) : null}
+          {transaction.status !== "unmatched" ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={update.isPending}
+              onClick={() => apply({ action: "unmatch" })}
+            >
+              Reset
+            </Button>
+          ) : null}
+        </div>
+        <Button
+          size="sm"
+          disabled={!selectedId || update.isPending}
+          onClick={() => apply({ action: "match", companyId: selectedId })}
+        >
+          {update.isPending ? "Saving…" : "Match company"}
+        </Button>
+      </div>
+    </dialog>
   );
 }

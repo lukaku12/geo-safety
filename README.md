@@ -10,7 +10,6 @@ end-to-end, and an architecture that holds up at scale** (millions of
 transactions).
 
 > **Live demo:** https://geo-safety-opal.vercel.app
-> **Walkthrough video:** _add your 5-minute screen recording link here_
 
 ---
 
@@ -222,6 +221,7 @@ Then click **Run auto-match** to reconcile by INN, and resolve the rest by hand.
 
 ```bash
 npm run build && npm start   # production build
+npm test                     # unit tests (verdict, suggestion, period, CSV rules)
 npm run lint                 # eslint
 npx tsc --noEmit             # typecheck
 ```
@@ -246,6 +246,12 @@ npx tsc --noEmit             # typecheck
   code — the expensive path stays O(1) round-trips as data grows.
 - **Server-side pagination** (`range` + exact count) means the transactions list
   is bounded regardless of table size.
+- **Company-level reconciliation filters in memory by design.** The
+  `company_reconciliation` RPC returns one row per company — a set bounded by
+  the customer base (hundreds), not by transaction volume (millions) — so
+  search/sort/pagination on that small result happen in the service layer.
+  The unbounded table (transactions) is always filtered, sorted, and paginated
+  in Postgres.
 - A clean **service boundary** makes it trivial to add auth/RLS, caching
   (`use cache` + `cacheTag` on read endpoints), or move heavy work to a queue.
 

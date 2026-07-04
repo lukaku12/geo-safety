@@ -166,12 +166,12 @@ export function CompanyDetail() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
-                    <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3 text-right font-medium">
+                    <th scope="col" className="px-4 py-3 font-medium">Status</th>
+                    <th scope="col" className="px-4 py-3 text-right font-medium">
                       Monthly amount
                     </th>
-                    <th className="px-4 py-3 font-medium">Start</th>
-                    <th className="px-4 py-3 font-medium">End</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Start</th>
+                    <th scope="col" className="px-4 py-3 font-medium">End</th>
                   </tr>
                 </thead>
                 <tbody>

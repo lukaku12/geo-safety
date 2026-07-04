@@ -1,7 +1,13 @@
-/** Quote a CSV cell only when it contains a comma, quote, or newline. */
+/** Leading chars Excel/Sheets interpret as a formula (CSV injection). */
+const FORMULA_TRIGGER = /^[=+\-@\t\r]/;
+
+/** Quote a CSV cell only when it contains a comma, quote, or line break. */
 function escapeCell(value: string | number | null | undefined): string {
-  const str = String(value ?? "");
-  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+  let str = String(value ?? "");
+  // Guard text cells (sender names, purposes) against spreadsheet formula
+  // injection; numbers are exempt so amounts like -500 stay numeric.
+  if (typeof value === "string" && FORMULA_TRIGGER.test(str)) str = `'${str}`;
+  return /[",\r\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
 }
 
 /**

@@ -48,9 +48,16 @@ function toTransaction(row: TransactionRow): Transaction {
   };
 }
 
-/** PostgREST `or()` is comma/paren-delimited; strip those from user input. */
+/**
+ * PostgREST `or()` is comma/paren-delimited — strip those. `ilike` treats
+ * `%`, `_` and `\` as pattern syntax — escape them so input matches literally
+ * (searching "100%" means the text "100%", not the prefix "100").
+ */
 function sanitizeSearch(term: string): string {
-  return term.replace(/[(),]/g, " ").trim();
+  return term
+    .replace(/[(),]/g, " ")
+    .replace(/[\\%_]/g, "\\$&")
+    .trim();
 }
 
 export async function listTransactions(
