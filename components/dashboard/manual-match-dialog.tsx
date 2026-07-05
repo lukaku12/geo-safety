@@ -73,7 +73,9 @@ export function ManualMatchDialog({
         if (e.target === e.currentTarget) requestClose();
       }}
       aria-label="Match transaction"
-      className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-lg border border-border bg-card text-foreground shadow-xl backdrop:bg-black/50 max-sm:mb-4"
+      // `overflow-visible` overrides the UA's `overflow: auto` so the company
+      // select's listbox can escape the dialog box instead of scrolling it.
+      className="m-auto w-[calc(100%-2rem)] max-w-lg overflow-visible rounded-lg border border-border bg-card text-foreground shadow-xl backdrop:bg-black/50 max-sm:mb-4"
     >
       <div className="flex items-start justify-between border-b border-border p-5">
         <div>
@@ -136,6 +138,7 @@ export function ManualMatchDialog({
             disabled={companiesLoading}
             onValueChange={setCompanyId}
             placeholder="Select a company…"
+            searchable
             options={[
               { value: "", label: "Select a company…" },
               ...(companies?.map((c) => ({

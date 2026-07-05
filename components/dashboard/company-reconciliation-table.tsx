@@ -139,8 +139,11 @@ export function CompanyReconciliationTable({
           >
             {/* Header cells stick to the top and the totals row to the bottom
                 of the scroll region; rules are inset shadows because collapsed
-                table borders don't travel with sticky cells. */}
-            <table className="w-full text-sm [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:bg-card [&_th]:shadow-[inset_0_-1px_0_var(--border)] [&_tfoot_td]:sticky [&_tfoot_td]:bottom-0 [&_tfoot_td]:bg-card [&_tfoot_td]:shadow-[inset_0_1px_0_var(--border)]">
+                table borders don't travel with sticky cells. `h-full` acts as
+                a min-height on tables, and the filler row after the data rows
+                soaks up the surplus, so the totals row sits pinned at the
+                card's bottom edge even when a page doesn't fill it. */}
+            <table className="h-full w-full text-sm [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:bg-card [&_th]:shadow-[inset_0_-1px_0_var(--border)] [&_tfoot_td]:sticky [&_tfoot_td]:bottom-0 [&_tfoot_td]:bg-card [&_tfoot_td]:shadow-[inset_0_1px_0_var(--border)]">
               <thead>
                 <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
                   <SortHeader
@@ -249,6 +252,9 @@ export function CompanyReconciliationTable({
                         </td>
                       </tr>
                     ))}
+                <tr aria-hidden className="h-full">
+                  <td colSpan={6} className="p-0" />
+                </tr>
               </tbody>
               {totals ? (
                 <tfoot>
