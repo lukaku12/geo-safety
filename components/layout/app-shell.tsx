@@ -38,7 +38,10 @@ function TopbarFallback() {
       aria-hidden
       className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-surface/80 px-4 sm:px-6"
     >
-      <Skeleton className="h-6 w-32" />
+      <div className="flex flex-col gap-1">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="hidden h-3 w-56 md:block" />
+      </div>
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
         <Skeleton className="h-10 w-32" />
         <Skeleton className="h-10 w-10 sm:w-24" />

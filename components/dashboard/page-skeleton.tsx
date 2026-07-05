@@ -158,16 +158,9 @@ export function OverviewSkeleton() {
 export function TransactionsPageSkeleton() {
   return (
     <section className="flex h-full min-h-0 flex-col gap-4">
-      <div className="shrink-0">
-        <h2 className="text-lg font-semibold">Transactions</h2>
-        <p className="text-sm text-muted-foreground">
-          Review incoming transfers and reconcile them with companies.
-        </p>
-      </div>
-
       <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <TabPillsSkeleton widths={["w-10", "w-16", "w-20", "w-16"]} />
-        <Skeleton className="h-10 w-full sm:w-72" />
+        <Skeleton className="h-10 w-full sm:w-80" />
       </div>
 
       <TableCardSkeleton />
@@ -179,7 +172,9 @@ export function TransactionsPageSkeleton() {
 export function CompaniesPageSkeleton() {
   return (
     <div className="flex h-full min-h-0 flex-col gap-4">
-      <Skeleton className="h-10 w-full shrink-0 sm:w-80" />
+      <div className="flex shrink-0 sm:justify-end">
+        <Skeleton className="h-10 w-full sm:w-80" />
+      </div>
       <TableCardSkeleton />
       <PaginationBarSkeleton />
     </div>
@@ -188,19 +183,15 @@ export function CompaniesPageSkeleton() {
 
 export function ReconciliationPageSkeleton() {
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4">
-      <div className="flex shrink-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <TabPillsSkeleton
-          widths={["w-10", "w-20", "w-16", "w-16", "w-24", "w-24"]}
-        />
-        <Skeleton className="h-10 w-full sm:w-80" />
-      </div>
-
-      <section className="flex min-h-0 flex-1 flex-col gap-3">
-        <div className="shrink-0">
-          <h2 className="text-lg font-semibold">Expected vs. actual</h2>
-          <Skeleton className="mt-1 h-4 w-72 max-w-full" />
+    <div className="flex h-full min-h-0 flex-col">
+      <section className="flex min-h-0 flex-1 flex-col gap-4">
+        <div className="flex shrink-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <TabPillsSkeleton
+            widths={["w-10", "w-20", "w-16", "w-16", "w-24", "w-24"]}
+          />
+          <Skeleton className="h-10 w-full sm:w-80" />
         </div>
+
         <TableCardSkeleton />
         <PaginationBarSkeleton />
       </section>

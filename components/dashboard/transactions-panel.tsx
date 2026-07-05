@@ -34,13 +34,6 @@ export function TransactionsPanel({
     // h-full + min-h-0 down the chain: the page fits the viewport exactly and
     // only the table region scrolls (both axes) — never the document.
     <section className="flex h-full min-h-0 flex-col gap-4">
-      <div className="shrink-0">
-        <h2 className="text-lg font-semibold">Transactions</h2>
-        <p className="text-sm text-muted-foreground">
-          Review incoming transfers and reconcile them with companies.
-        </p>
-      </div>
-
       <TransactionFilters query={query} patch={patch} />
 
       {/* min-h-40 floor: on absurdly short viewports the page degrades to

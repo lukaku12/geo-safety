@@ -6,7 +6,7 @@ import { Menu, RefreshCw, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
-import { titleForPath } from "@/components/layout/nav-items";
+import { descriptionForPath, titleForPath } from "@/components/layout/nav-items";
 import { usePeriod } from "@/hooks/use-period";
 import {
   useResetReconciliation,
@@ -50,9 +50,16 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
         <Menu className="h-5 w-5" />
       </button>
 
-      <h1 className="text-base font-semibold sm:text-lg">
-        {titleForPath(pathname)}
-      </h1>
+      <div className="min-w-0">
+        <h1 className="truncate text-base font-semibold leading-tight sm:text-lg">
+          {titleForPath(pathname)}
+        </h1>
+        {/* Hidden on small screens — the period select and actions win the
+            space; the title alone still identifies the page. */}
+        <p className="hidden truncate text-xs text-muted-foreground md:block">
+          {descriptionForPath(pathname)}
+        </p>
+      </div>
 
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
         {/* A view filter, not an action — stays open so the user can flip

@@ -61,16 +61,19 @@ export function CompaniesDirectory() {
     // h-full + min-h-0 down the chain: the page fits the viewport exactly and
     // only the table region scrolls (both axes) — never the document.
     <div className="flex h-full min-h-0 flex-col gap-4">
-      <div className="relative shrink-0 sm:w-80">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="search"
-          value={term}
-          onChange={(e) => setTerm(e.target.value)}
-          placeholder="Search company or tax ID…"
-          aria-label="Search companies"
-          className="h-10 w-full rounded-md border border-input bg-surface pl-9 pr-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
+      {/* Search sits on the right, where the other table pages put it. */}
+      <div className="flex shrink-0 sm:justify-end">
+        <div className="relative w-full sm:w-80">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="search"
+            value={term}
+            onChange={(e) => setTerm(e.target.value)}
+            placeholder="Search company or tax ID…"
+            aria-label="Search companies"
+            className="h-10 w-full rounded-md border border-input bg-surface pl-9 pr-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        </div>
       </div>
 
       {companies.isError ? (

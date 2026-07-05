@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import type {
   CompanyReconciliation,
 } from "@/lib/types/domain";
 import { isMonthPeriod, type PeriodKey } from "@/lib/utils/periods";
-import { formatCurrency, formatMonth, formatSignedCurrency } from "@/lib/utils/format";
+import { formatCurrency, formatSignedCurrency } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 import { downloadCsv, toCsv } from "@/lib/utils/csv";
 import { OUTCOME_LABELS } from "@/lib/reconciliation/status";
@@ -61,10 +61,14 @@ export function CompanyReconciliationTable({
   query,
   patch,
   toggleSort,
+  controls,
 }: {
   query: ReturnType<typeof useReconciliationTableParams>["query"];
   patch: ReturnType<typeof useReconciliationTableParams>["patch"];
   toggleSort: ReturnType<typeof useReconciliationTableParams>["toggleSort"];
+  /** Filter/search row, rendered between the page header and the table so
+      every table page reads heading → controls → table. */
+  controls?: ReactNode;
 }) {
   const period = query.period as PeriodKey;
   const enabled = isMonthPeriod(period);
@@ -84,27 +88,25 @@ export function CompanyReconciliationTable({
   }, [data, rows]);
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col gap-3">
-      <div className="flex shrink-0 items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold">Expected vs. actual</h2>
-          <p className="text-sm text-muted-foreground">
-            {enabled
-              ? `Per-company billing reconciliation for ${formatMonth(period)}.`
-              : "Pick a specific month to compare contracted amounts with payments."}
-          </p>
+    <section className="flex min-h-0 flex-1 flex-col gap-4">
+      {/* The page title/description live in the top bar; this row holds the
+          view's filters (from the parent) plus the export action. */}
+      {controls || (enabled && rows.length > 0) ? (
+        <div className="flex shrink-0 flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="min-w-0 flex-1">{controls}</div>
+          {enabled && rows.length > 0 ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              className="self-start lg:self-auto"
+              onClick={() => exportCsv(rows, period)}
+            >
+              <Download className="h-4 w-4" />
+              Export CSV
+            </Button>
+          ) : null}
         </div>
-        {enabled && rows.length > 0 ? (
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => exportCsv(rows, period)}
-          >
-            <Download className="h-4 w-4" />
-            Export CSV
-          </Button>
-        ) : null}
-      </div>
+      ) : null}
 
       {!enabled ? (
         <EmptyState
